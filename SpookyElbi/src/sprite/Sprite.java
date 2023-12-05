@@ -1,8 +1,11 @@
 package sprite;
 
 import javafx.geometry.Rectangle2D;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 
 public class Sprite {
 	protected Image image;
@@ -22,6 +25,17 @@ public class Sprite {
 	public void setImage(String filename) {
 		Image image = new Image(filename, 20, 20, true, true);
 		setImage(image);
+	}
+	
+	public void rotateImage(double degrees) {
+		ImageView imageView = new ImageView(this.image);
+		imageView.setRotate(degrees);
+		
+		SnapshotParameters params = new SnapshotParameters();
+        params.setFill(Color.TRANSPARENT);
+
+        Image rotatedImage = imageView.snapshot(params, null);
+        this.image = rotatedImage;
 	}
 	
 	public void setPosition(double x, double y) {

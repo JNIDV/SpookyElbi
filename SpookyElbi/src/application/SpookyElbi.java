@@ -10,17 +10,20 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.event.EventHandler;
 
 import entities.Enemy;
 import entities.MainCharacter;
+import weapons.Bullet;
+import weapons.Weapon;
 
 import sprite.Sprite;
 import wrappers.LongValue;
 
 import java.util.Random;
 
-public class SpookyElbi extends Application {	
+public class SpookyElbi extends Application {
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -36,6 +39,30 @@ public class SpookyElbi extends Application {
 		Canvas canvas = new Canvas(1500, 1200);
 		root.getChildren().add(canvas);
 		
+		Random random = new Random();
+		
+		GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
+		
+		Sprite mainCharacter = new MainCharacter();
+		mainCharacter.setImage("images\\mainCharacter.png");
+		mainCharacter.rotateImage(45);
+		
+		Sprite weapon = new Weapon();
+		weapon.setImage("images\\pen.png");
+		weapon.setPosition(30, 0);
+		((Weapon) weapon).reload();
+		
+		ArrayList<Sprite> enemies = new ArrayList<Sprite>();
+		
+		for (int i = 0; i < 10; i++) {
+			enemies.add(new Enemy());
+			enemies.get(i).setImage("images\\Frog.png");
+			double startingX = random.nextDouble() * 1500;
+			double startingY = random.nextDouble() * 1200;
+//			System.out.println(startingX + " " + startingY);
+			enemies.get(i).setPosition(startingX, startingY);
+		}
+		
 		ArrayList<String> input = new ArrayList<String>();
 		
 		scene.setOnKeyPressed(
@@ -46,6 +73,10 @@ public class SpookyElbi extends Application {
 					
 					if (!input.contains(code)) {
 						input.add(code);
+					}
+					
+					if (code == "R") {
+						((Weapon) weapon).reload();
 					}
 				}
 			}
@@ -61,23 +92,17 @@ public class SpookyElbi extends Application {
 			}
 		);
 		
-		Random random = new Random();
-		
-		GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
-		
-		Sprite mainCharacter = new MainCharacter();
-		mainCharacter.setImage("images\\mainCharacter.png");
-		
-		ArrayList<Sprite> enemies = new ArrayList<Sprite>();
-		
-		for (int i = 0; i < 10; i++) {
-			enemies.add(new Enemy());
-			enemies.get(i).setImage("images\\Frog.png");
-			double startingX = random.nextDouble() * 1500;
-			double startingY = random.nextDouble() * 1200;
-			System.out.println(startingX + " " + startingY);
-			enemies.get(i).setPosition(startingX, startingY);
-		}
+		scene.setOnMouseClicked(
+			new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent mouseEvent) {
+					double x = mouseEvent.getSceneX();
+					double y = mouseEvent.getSceneY();
+					System.out.println("Shot at " + x + " " + y);
+					((Weapon) weapon).shoot(x, y);
+				}
+			}
+		);
 		
 		LongValue lastNanoTime = new LongValue(System.nanoTime());
 		
@@ -89,38 +114,58 @@ public class SpookyElbi extends Application {
 				lastNanoTime.value = currentNanoTime;
 				
 				mainCharacter.setVelocity(0, 0);
+				weapon.setVelocity(0, 0);
 				
 				if (input.contains("W")) {
 					mainCharacter.addVelocity(0, -100);
+					weapon.addVelocity(0, -100);
 				}
 				
 				if (input.contains("A")) {
 					mainCharacter.addVelocity(-100, 0);
+					weapon.addVelocity(-100, 0);
 				}
 				
 				if (input.contains("S")) {
 					mainCharacter.addVelocity(0, 100);
+					weapon.addVelocity(0, 100);
 				}
 				
 				if (input.contains("D")) {
 					mainCharacter.addVelocity(100, 0);
+					weapon.addVelocity(100, 0);
 				}
 				
 				mainCharacter.update(elapsedTime);
+				weapon.update(elapsedTime);
 				
-				for (int i = 0; i < 10; i++) {
-					Sprite enemy = enemies.get(i);
+				for (Sprite enemy : enemies) {
 					Enemy enemyE = (Enemy) enemy;
 					enemyE.updateDirection(mainCharacter, enemies);
 	//				System.out.println(enemyE.getDirectionX() + " " + enemyE.getDirectionY());
 					
-					enemy.setVelocity(enemyE.getDirectionX() * enemyE.getSpeedX(), enemyE.getDirectionY() * enemyE.getSpeedY());
+					double velocityX = enemyE.getDirectionX() * enemyE.getSpeedX();
+					double velocityY = enemyE.getDirectionY() * enemyE.getSpeedY();
+					
+					enemy.setVelocity(velocityX, velocityY);
 					enemy.update(elapsedTime);
 					enemyE.speedUp(elapsedTime);
 					enemy.render(graphicsContext);
 				}
 				
+				for (Sprite bullet : ((Weapon) weapon).shotBullets) {
+					Bullet bulletE = (Bullet) bullet;
+					
+					double velocityX = bulletE.getDirectionX() * Bullet.BULLET_SPEED;
+					double velocityY = bulletE.getDirectionY() * Bullet.BULLET_SPEED;
+					
+					bullet.setVelocity(velocityX, velocityY);
+					bullet.update(elapsedTime);
+					bullet.render(graphicsContext);
+				}
+				
 				mainCharacter.render(graphicsContext);
+				weapon.render(graphicsContext);
 				
 			}
 		}.start();
