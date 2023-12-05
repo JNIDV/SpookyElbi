@@ -46,11 +46,19 @@ public class Enemy extends Sprite {
 	            double distance = Math.sqrt(otherDx * otherDx + otherDy * otherDy);
 
 	            // If too close to another enemy, adjust movement to avoid overlap
-	            if (distance < Sprite.MIN_DISTANCE) { // Define a minimum distance to maintain
-	                this.directionX -= otherDx / distance;
-	                this.directionY -= otherDy / distance;
-	            }
+                this.directionX -= otherDx / distance;
+                this.directionY -= otherDy / distance;
 	        }
+		}
+		
+		if (mainCharacter.intersects(this)) {
+			double otherDx = mainCharacter.getPositionX() - this.positionX;
+            double otherDy = mainCharacter.getPositionY() - this.positionY;
+            double distance = Math.sqrt(otherDx * otherDx + otherDy * otherDy);
+
+            // If too close to mainCharacter, adjust movement to avoid overlap
+            this.directionX -= otherDx / distance;
+            this.directionY -= otherDy / distance;
 		}
 	}
 	

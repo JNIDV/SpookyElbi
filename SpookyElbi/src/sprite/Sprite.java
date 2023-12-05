@@ -5,8 +5,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
 public class Sprite {
-	public static final double MIN_DISTANCE = 1000;
-	
 	protected Image image;
 	protected double positionX;
 	protected double positionY;
