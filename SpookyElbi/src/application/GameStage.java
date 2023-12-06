@@ -28,7 +28,7 @@ public class GameStage {
 	
 	private Stage stage;
 	private Group root;
-	private Scene scene;
+	private Scene gameProperScene;
 	private Canvas canvas;
 	private Random random;
 	private GraphicsContext graphicsContext;
@@ -37,9 +37,10 @@ public class GameStage {
 	private ArrayList<Sprite> enemies;
 	private ArrayList<String> input;
 	
-	public GameStage() {
+	public GameStage(Stage stage) {
+		this.stage           = stage;
 		this.root            = new Group();
-		this.scene           = new Scene(this.root, GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
+		this.gameProperScene = new Scene(this.root, GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
 		this.canvas          = new Canvas(GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
 		this.random          = new Random();
 		this.graphicsContext = this.canvas.getGraphicsContext2D();
@@ -49,17 +50,16 @@ public class GameStage {
 		this.input           = new ArrayList<String>();
 	}
 	
-	public void setStage(Stage stage) {
-		this.stage = stage;
+	public void runSpookyElbi() {
 		this.setMainCharacter("images\\mainCharacter.png");
 		this.setWeapon("images\\pen.png");
 		this.spawnEnemies(10, "images\\Frog.png");
 		this.handleKeyEvents();
 		this.handleMouseEvents();
 		this.runAnimation();
-		this.stage.setTitle("Spooky Elbi");
 		this.root.getChildren().add(this.canvas);
-		this.stage.setScene(this.scene);
+		this.stage.setTitle("Spooky Elbi");
+		this.stage.setScene(this.gameProperScene);
 		this.stage.show();
 	}
 	
@@ -71,15 +71,15 @@ public class GameStage {
 	public void setWeapon(String imageFilename) {
 		this.weapon.setImage(imageFilename);
 		this.weapon.setPosition(780, 600);
-		((Weapon) weapon).reload();
+		((Weapon) this.weapon).reload();
 	}
 	
 	public Sprite spawnEnemy(String imageFilename) {
 		Sprite newEnemy = new Enemy();
 		newEnemy.setImage(imageFilename);
 		
-		double startingX = random.nextDouble() * GameStage.WINDOW_WIDTH;
-		double startingY = random.nextDouble() * GameStage.WINDOW_HEIGHT;
+		double startingX = this.random.nextDouble() * GameStage.WINDOW_WIDTH;
+		double startingY = this.random.nextDouble() * GameStage.WINDOW_HEIGHT;
 		
 		newEnemy.setPosition(startingX, startingY);
 		return newEnemy;
@@ -93,7 +93,7 @@ public class GameStage {
 	}
 	
 	public void handleKeyEvents() {
-		this.scene.setOnKeyPressed(
+		this.gameProperScene.setOnKeyPressed(
 			new EventHandler<KeyEvent>() {
 				@Override
 				public void handle(KeyEvent keyEvent) {
@@ -110,7 +110,7 @@ public class GameStage {
 			}
 		);
 		
-		this.scene.setOnKeyReleased(
+		this.gameProperScene.setOnKeyReleased(
 			new EventHandler<KeyEvent>() {
 				@Override
 				public void handle(KeyEvent keyEvent) {
@@ -122,7 +122,7 @@ public class GameStage {
 	}
 	
 	public void handleMouseEvents() {
-		this.scene.setOnMouseClicked(
+		this.gameProperScene.setOnMouseClicked(
 			new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent mouseEvent) {
@@ -139,36 +139,36 @@ public class GameStage {
 		double elapsedTime = (currentNanoTime - lastNanoTime.value) / 1e9;
 		lastNanoTime.value = currentNanoTime;
 		
-		mainCharacter.setVelocity(0, 0);
-		weapon.setVelocity(0, 0);
+		this.mainCharacter.setVelocity(0, 0);
+		this.weapon.setVelocity(0, 0);
 		
-		if (input.contains("W")) {
-			mainCharacter.addVelocity(0, -100);
-			weapon.addVelocity(0, -100);
+		if (this.input.contains("W")) {
+			this.mainCharacter.addVelocity(0, -100);
+			this.weapon.addVelocity(0, -100);
 		}
 		
-		if (input.contains("A")) {
-			mainCharacter.addVelocity(-100, 0);
-			weapon.addVelocity(-100, 0);
+		if (this.input.contains("A")) {
+			this.mainCharacter.addVelocity(-100, 0);
+			this.weapon.addVelocity(-100, 0);
 		}
 		
-		if (input.contains("S")) {
-			mainCharacter.addVelocity(0, 100);
-			weapon.addVelocity(0, 100);
+		if (this.input.contains("S")) {
+			this.mainCharacter.addVelocity(0, 100);
+			this.weapon.addVelocity(0, 100);
 		}
 		
-		if (input.contains("D")) {
-			mainCharacter.addVelocity(100, 0);
-			weapon.addVelocity(100, 0);
+		if (this.input.contains("D")) {
+			this.mainCharacter.addVelocity(100, 0);
+			this.weapon.addVelocity(100, 0);
 		}
 		
-		mainCharacter.update(elapsedTime);
-		weapon.update(elapsedTime);
+		this.mainCharacter.update(elapsedTime);
+		this.weapon.update(elapsedTime);
 		
-		for (Sprite enemy : enemies) {
+		for (Sprite enemy : this.enemies) {
 			Enemy enemyE = (Enemy) enemy;
 			
-			enemyE.updateDirection(mainCharacter, enemies);
+			enemyE.updateDirection(this.mainCharacter, this.enemies);
 			
 			double velocityX = enemyE.getDirectionX() * enemyE.getSpeedX();
 			double velocityY = enemyE.getDirectionY() * enemyE.getSpeedY();
@@ -179,7 +179,7 @@ public class GameStage {
 			enemyE.speedUp(elapsedTime);
 		}
 		
-		for (Sprite bullet : ((Weapon) weapon).shotBullets) {
+		for (Sprite bullet : ((Weapon) this.weapon).shotBullets) {
 			Bullet bulletE = (Bullet) bullet;
 			
 			double velocityX = bulletE.getDirectionX() * Bullet.BULLET_SPEED;
@@ -190,26 +190,29 @@ public class GameStage {
 		}
 	}
 	
+	public void renderEntities() {
+		this.graphicsContext.clearRect(0, 0, GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
+		this.mainCharacter.render(graphicsContext);
+		this.weapon.render(graphicsContext);
+		
+		for (Sprite enemy : this.enemies) {
+			enemy.render(this.graphicsContext);
+		}
+		
+		for (Sprite bullet : ((Weapon) this.weapon).shotBullets) {
+			bullet.render(this.graphicsContext);
+		}
+	}
+	
 	public void runAnimation() {
+		GameStage reference = this;
 		LongValue lastNanoTime = new LongValue(System.nanoTime());
 		
 		new AnimationTimer() {
 			@Override
 			public void handle(long currentNanoTime) {
-				updateEntities(currentNanoTime, lastNanoTime);
-				
-				graphicsContext.clearRect(0, 0, GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
-				
-				mainCharacter.render(graphicsContext);
-				weapon.render(graphicsContext);
-				
-				for (Sprite enemy : enemies) {
-					enemy.render(graphicsContext);
-				}
-				
-				for (Sprite bullet : ((Weapon) weapon).shotBullets) {
-					bullet.render(graphicsContext);
-				}
+				reference.updateEntities(currentNanoTime, lastNanoTime);
+				reference.renderEntities();
 			}
 		}.start();
 	}

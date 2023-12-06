@@ -4,6 +4,7 @@ import sprite.Sprite;
 
 public class Bullet extends Sprite {
 	public final static double BULLET_SPEED = 50;
+	
 	private double directionX;
 	private double directionY;
 	

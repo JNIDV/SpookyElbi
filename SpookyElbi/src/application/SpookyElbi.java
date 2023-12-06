@@ -10,7 +10,7 @@ public class SpookyElbi extends Application {
 	
 	@Override
 	public void start(Stage stage) {
-		GameStage gameStage = new GameStage();
-		gameStage.setStage(stage);
+		GameStage gameStage = new GameStage(stage);
+		gameStage.runSpookyElbi();
 	}
 }
