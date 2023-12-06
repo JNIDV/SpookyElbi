@@ -27,7 +27,7 @@ public class Weapon extends Sprite {
 		this.shotBullets.add(removedBullet);
 		removedBullet.setPosition(this.positionX, this.positionY);
 		
-		System.out.println("Current ammo: " + this.bullets.size());
+//		System.out.println("Current ammo: " + this.bullets.size());
 	}
 	
 	public void reload() {
@@ -38,6 +38,6 @@ public class Weapon extends Sprite {
 			((Bullet) bullet).setDamage(20);
 		}
 		
-		System.out.println("Current ammo: " + this.bullets.size());
+//		System.out.println("Current ammo: " + this.bullets.size());
 	}
 }

@@ -16,6 +16,7 @@ public class Sprite {
 	protected double velocityY;
 	protected double width;
 	protected double height;
+	protected int state;
 	
 	public void setImage(Image image) {
 		this.image = image;
@@ -62,17 +63,18 @@ public class Sprite {
 		this.positionX += velocityX * time;
 		this.positionY += velocityY * time;
 		
-		if (this.positionX + this.width >= GameStage.CANVAS_WIDTH) {
-			this.positionX = GameStage.CANVAS_WIDTH - this.width;
-		} else if (this.positionX <= 0) {
-			this.positionX = 0;
+		if (this.positionX + this.width >= GameStage.CANVAS_WIDTH - GameStage.VIEWPORT_WIDTH / 2) {
+			this.positionX = GameStage.CANVAS_WIDTH - this.width - GameStage.VIEWPORT_WIDTH / 2;
+		} else if (this.positionX <= GameStage.VIEWPORT_WIDTH / 2) {
+			this.positionX = GameStage.VIEWPORT_WIDTH / 2;
 		}
 		
-		if (this.positionY + this.height >= GameStage.CANVAS_HEIGHT) {
-			this.positionY = GameStage.CANVAS_HEIGHT - this.height;
-		} else if (this.positionY <= 0) {
-			this.positionY = 0;
+		if (this.positionY + this.height >= GameStage.CANVAS_HEIGHT - GameStage.VIEWPORT_HEIGHT / 2) {
+			this.positionY = GameStage.CANVAS_HEIGHT - this.height - GameStage.VIEWPORT_HEIGHT / 2;
+		} else if (this.positionY <= GameStage.VIEWPORT_HEIGHT / 2) {
+			this.positionY = GameStage.VIEWPORT_HEIGHT / 2;
 		}
+		
 //		System.out.println(positionX + " " + positionY);
 	}
 	

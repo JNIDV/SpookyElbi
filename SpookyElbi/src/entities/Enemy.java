@@ -14,7 +14,7 @@ public class Enemy extends Sprite {
 	private double speedY;
 	
 	public Enemy() {
-		this.health = 100;
+		this.health = 20;
 		this.speedX = 50;
 		this.speedY = 50;
 	}

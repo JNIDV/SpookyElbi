@@ -7,7 +7,7 @@ import entities.Enemy;
 
 public class Bullet extends Sprite {
 	public final static double BULLET_SPEED = 150;
-	public final static double MAX_DISTANCE = 100;
+	public final static double MAX_DISTANCE = 300;
 	
 	private double damage;
 	private double startingX;
@@ -23,7 +23,6 @@ public class Bullet extends Sprite {
 	public void setDirection(double x, double y, Weapon weapon) {
 		double dx = x - ((Sprite) weapon).getPositionX();
 		double dy = y - ((Sprite) weapon).getPositionY();
-		
 		double norm = Math.sqrt(dx * dx + dy * dy);
 		
 		if (norm == 0) {
@@ -34,7 +33,6 @@ public class Bullet extends Sprite {
 		
 		this.directionX = dx / norm;
 		this.directionY = dy / norm;
-		
 		((Sprite) this).rotateImage(180 * Math.atan(this.directionY / this.directionX) / Math.PI);
 	}
 	
