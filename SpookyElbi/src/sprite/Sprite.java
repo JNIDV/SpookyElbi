@@ -1,5 +1,6 @@
 package sprite;
 
+import application.GameStage;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.GraphicsContext;
@@ -18,13 +19,17 @@ public class Sprite {
 	
 	public void setImage(Image image) {
 		this.image = image;
-		this.width = image.getWidth();
-		this.height = image.getHeight();
 	}
 	
-	public void setImage(String filename) {
-		Image image = new Image(filename, 20, 20, true, true);
+	public void setSizes(double width, double height) {
+		this.width = width;
+		this.height = height;
+	}
+	
+	public void setImage(String filename, double width, double height) {
+		Image image = new Image(filename, width, height, true, true);
 		setImage(image);
+		setSizes(width, height);
 	}
 	
 	public void rotateImage(double degrees) {
@@ -56,6 +61,18 @@ public class Sprite {
 	public void update(double time) {
 		this.positionX += velocityX * time;
 		this.positionY += velocityY * time;
+		
+		if (this.positionX + this.width >= GameStage.CANVAS_WIDTH) {
+			this.positionX = GameStage.CANVAS_WIDTH - this.width;
+		} else if (this.positionX <= 0) {
+			this.positionX = 0;
+		}
+		
+		if (this.positionY + this.height >= GameStage.CANVAS_HEIGHT) {
+			this.positionY = GameStage.CANVAS_HEIGHT - this.height;
+		} else if (this.positionY <= 0) {
+			this.positionY = 0;
+		}
 //		System.out.println(positionX + " " + positionY);
 	}
 	

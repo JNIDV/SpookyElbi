@@ -21,6 +21,8 @@ public class Weapon extends Sprite {
 		}
 		
 		Sprite removedBullet = this.bullets.remove(this.bullets.size() - 1);
+		Sprite selfReference = this;
+		((Bullet) removedBullet).setStarting(selfReference.getPositionX(), selfReference.getPositionY());
 		((Bullet) removedBullet).setDirection(x, y, this);
 		this.shotBullets.add(removedBullet);
 		removedBullet.setPosition(this.positionX, this.positionY);
@@ -32,7 +34,8 @@ public class Weapon extends Sprite {
 		while (this.bullets.size() < Weapon.AMMO_COUNT) {
 			Sprite bullet = new Bullet();
 			this.bullets.add(bullet);
-			bullet.setImage("images\\pen.png");
+			bullet.setImage("images\\pen.png", 10, 10);
+			((Bullet) bullet).setDamage(20);
 		}
 		
 		System.out.println("Current ammo: " + this.bullets.size());

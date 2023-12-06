@@ -1,12 +1,24 @@
 package weapons;
 
+import java.util.ArrayList;
+
 import sprite.Sprite;
+import entities.Enemy;
 
 public class Bullet extends Sprite {
-	public final static double BULLET_SPEED = 50;
+	public final static double BULLET_SPEED = 150;
+	public final static double MAX_DISTANCE = 100;
 	
+	private double damage;
+	private double startingX;
+	private double startingY;
 	private double directionX;
 	private double directionY;
+	
+	public void setStarting(double x, double y) {
+		this.startingX = x;
+		this.startingY = y;
+	}
 	
 	public void setDirection(double x, double y, Weapon weapon) {
 		double dx = x - ((Sprite) weapon).getPositionX();
@@ -26,11 +38,37 @@ public class Bullet extends Sprite {
 		((Sprite) this).rotateImage(180 * Math.atan(this.directionY / this.directionX) / Math.PI);
 	}
 	
+	public boolean checkEnemiesCollision(ArrayList<Sprite> enemies) {
+		boolean collided = false;
+		
+		for (Sprite enemy : enemies) {
+			if (enemy.intersects(this)) {
+				collided = true;
+				((Enemy) enemy).decreaseHealth(this.damage);
+				break;
+			}
+		}
+		
+		return collided;
+	}
+	
 	public double getDirectionX() {
 		return this.directionX;
 	}
 	
 	public double getDirectionY() {
 		return this.directionY;
+	}
+	
+	public void setDamage(double damage) {
+		this.damage = damage;
+	}
+	
+	public boolean reachedMaxRange() {
+		Sprite selfReference = this;
+		double dx = selfReference.getPositionX() - this.startingX;
+		double dy = selfReference.getPositionY() - this.startingY;
+		double distance = Math.sqrt(dx * dx + dy * dy);
+		return distance >= Bullet.MAX_DISTANCE;
 	}
 }

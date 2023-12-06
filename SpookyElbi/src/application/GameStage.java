@@ -4,12 +4,15 @@ import java.util.ArrayList;
 
 import javafx.animation.AnimationTimer;
 import javafx.stage.Stage;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ScrollPane;
+//import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Rectangle;
 import javafx.event.EventHandler;
 
 import entities.Enemy;
@@ -23,13 +26,16 @@ import wrappers.LongValue;
 import java.util.Random;
 
 public class GameStage {
-	public static final int WINDOW_WIDTH = 1600;
-	public static final int WINDOW_HEIGHT = 900;
+	public static final int CANVAS_WIDTH = 2400;
+	public static final int CANVAS_HEIGHT = 2400;
+	public static final int VIEWPORT_WIDTH = 960;
+	public static final int VIEWPORT_HEIGHT = 540;
 	
 	private Stage stage;
-	private Group root;
+	private StackPane root;
+	private ScrollPane scrollPane;
 	private Scene gameProperScene;
-	private Canvas canvas;
+	private Canvas entityCanvas;
 	private Random random;
 	private GraphicsContext graphicsContext;
 	private Sprite mainCharacter;
@@ -39,11 +45,14 @@ public class GameStage {
 	
 	public GameStage(Stage stage) {
 		this.stage           = stage;
-		this.root            = new Group();
-		this.gameProperScene = new Scene(this.root, GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
-		this.canvas          = new Canvas(GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
+		this.entityCanvas    = new Canvas(GameStage.CANVAS_WIDTH, GameStage.CANVAS_HEIGHT);
+		this.scrollPane      = new ScrollPane(this.entityCanvas);
+		this.scrollPane.setPrefViewportWidth(GameStage.VIEWPORT_WIDTH);
+        this.scrollPane.setPrefViewportHeight(GameStage.VIEWPORT_HEIGHT);
+		this.root            = new StackPane(this.scrollPane);
+		this.gameProperScene = new Scene(this.root, GameStage.VIEWPORT_WIDTH, GameStage.VIEWPORT_HEIGHT);
 		this.random          = new Random();
-		this.graphicsContext = this.canvas.getGraphicsContext2D();
+		this.graphicsContext = this.entityCanvas.getGraphicsContext2D();
 		this.mainCharacter   = new MainCharacter();
 		this.weapon          = new Weapon();
 		this.enemies         = new ArrayList<Sprite>();
@@ -56,30 +65,30 @@ public class GameStage {
 		this.spawnEnemies(10, "images\\Frog.png");
 		this.handleKeyEvents();
 		this.handleMouseEvents();
-		this.runAnimation();
-		this.root.getChildren().add(this.canvas);
 		this.stage.setTitle("Spooky Elbi");
 		this.stage.setScene(this.gameProperScene);
 		this.stage.show();
+		this.runAnimation();
 	}
 	
 	public void setMainCharacter(String imageFilename) {
-		this.mainCharacter.setImage(imageFilename);
+		this.mainCharacter.setImage(imageFilename, 20, 20);
 		this.mainCharacter.setPosition(750, 600);
 	}
 	
 	public void setWeapon(String imageFilename) {
-		this.weapon.setImage(imageFilename);
-		this.weapon.setPosition(780, 600);
+		this.weapon.setImage(imageFilename, 10, 10);
+		this.weapon.setPosition(760, 600);
+		((Sprite) this.weapon).rotateImage(-45);
 		((Weapon) this.weapon).reload();
 	}
 	
 	public Sprite spawnEnemy(String imageFilename) {
 		Sprite newEnemy = new Enemy();
-		newEnemy.setImage(imageFilename);
+		newEnemy.setImage(imageFilename, 20, 20);
 		
-		double startingX = this.random.nextDouble() * GameStage.WINDOW_WIDTH;
-		double startingY = this.random.nextDouble() * GameStage.WINDOW_HEIGHT;
+		double startingX = this.random.nextDouble() * GameStage.CANVAS_WIDTH;
+		double startingY = this.random.nextDouble() * GameStage.CANVAS_HEIGHT;
 		
 		newEnemy.setPosition(startingX, startingY);
 		return newEnemy;
@@ -122,7 +131,7 @@ public class GameStage {
 	}
 	
 	public void handleMouseEvents() {
-		this.gameProperScene.setOnMouseClicked(
+		this.entityCanvas.setOnMouseClicked(
 			new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent mouseEvent) {
@@ -179,6 +188,9 @@ public class GameStage {
 			enemyE.speedUp(elapsedTime);
 		}
 		
+		// Dead bullets
+		ArrayList<Sprite> bulletsToBeDeleted = new ArrayList<Sprite>();
+		
 		for (Sprite bullet : ((Weapon) this.weapon).shotBullets) {
 			Bullet bulletE = (Bullet) bullet;
 			
@@ -187,11 +199,36 @@ public class GameStage {
 			
 			bullet.setVelocity(velocityX, velocityY);
 			bullet.update(elapsedTime);
+			
+			if (bulletE.checkEnemiesCollision(this.enemies) || bulletE.reachedMaxRange()) {
+				bulletsToBeDeleted.add(bullet);
+			}
+		}
+		
+		for (int i = (int) bulletsToBeDeleted.size() - 1; i >= 0; i--) {
+			Sprite bulletToBeDeleted = bulletsToBeDeleted.remove(i);
+			((Weapon) this.weapon).shotBullets.remove(bulletToBeDeleted);
+			bulletToBeDeleted = null;
+		}
+		
+		// Dead enemies
+		ArrayList<Sprite> deadEnemies = new ArrayList<Sprite>();
+		
+		for (Sprite enemy : this.enemies) {
+			if (((Enemy) enemy).isDead()) {
+				deadEnemies.add(enemy);
+			}
+		}
+		
+		for (int i = (int) deadEnemies.size() - 1; i >= 0; i--) {
+			Sprite deadEnemy = deadEnemies.remove(i);
+			this.enemies.remove(deadEnemy);
+			deadEnemy = null;
 		}
 	}
 	
 	public void renderEntities() {
-		this.graphicsContext.clearRect(0, 0, GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
+		this.graphicsContext.clearRect(0, 0, GameStage.CANVAS_WIDTH, GameStage.CANVAS_HEIGHT);
 		this.mainCharacter.render(graphicsContext);
 		this.weapon.render(graphicsContext);
 		
@@ -204,14 +241,39 @@ public class GameStage {
 		}
 	}
 	
+	public void updateArea(Rectangle smallArea) {
+		double viewportX = Math.max(0, this.mainCharacter.getPositionX() - (GameStage.VIEWPORT_WIDTH / 2));
+        double viewportY = Math.max(0, this.mainCharacter.getPositionY() - (GameStage.VIEWPORT_HEIGHT / 2));
+		smallArea.setX(viewportX);
+		smallArea.setY(viewportY);
+		
+		if (viewportX + GameStage.VIEWPORT_WIDTH > GameStage.CANVAS_WIDTH) {
+            smallArea.setWidth(GameStage.CANVAS_WIDTH - viewportX);
+        } else {
+        	smallArea.setWidth(GameStage.VIEWPORT_WIDTH);
+        }
+
+        if (viewportY + GameStage.VIEWPORT_HEIGHT > GameStage.CANVAS_HEIGHT) {
+        	smallArea.setHeight(GameStage.CANVAS_HEIGHT - viewportY);
+        } else {
+        	smallArea.setHeight(GameStage.VIEWPORT_HEIGHT);
+        }
+        
+        scrollPane.setHvalue(smallArea.getX() / (GameStage.CANVAS_WIDTH - GameStage.VIEWPORT_WIDTH));
+        scrollPane.setVvalue(smallArea.getY() / (GameStage.CANVAS_HEIGHT - GameStage.VIEWPORT_HEIGHT));
+	}
+	
 	public void runAnimation() {
 		GameStage reference = this;
 		LongValue lastNanoTime = new LongValue(System.nanoTime());
+		Rectangle smallArea = new Rectangle(GameStage.VIEWPORT_WIDTH, GameStage.VIEWPORT_HEIGHT);
+		this.entityCanvas.setClip(smallArea);
 		
 		new AnimationTimer() {
 			@Override
 			public void handle(long currentNanoTime) {
 				reference.updateEntities(currentNanoTime, lastNanoTime);
+				reference.updateArea(smallArea);
 				reference.renderEntities();
 			}
 		}.start();
