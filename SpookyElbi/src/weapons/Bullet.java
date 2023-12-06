@@ -22,7 +22,7 @@ public class Bullet extends Sprite {
 		this.directionX = dx / norm;
 		this.directionY = dy / norm;
 		
-		((Sprite) this).rotateImage(180 * Math.atan(this.directionY / this.directionX) / 3.14);
+		((Sprite) this).rotateImage(180 * Math.atan(this.directionY / this.directionX) / Math.PI);
 	}
 	
 	public double getDirectionX() {

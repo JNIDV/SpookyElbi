@@ -6,14 +6,14 @@ import sprite.Sprite;
 
 public class Enemy extends Sprite {
 	public final static double SPEED_INCREASE = 5;
-	private double health;
+//	private double health;
 	private double directionX;
 	private double directionY;
 	private double speedX;
 	private double speedY;
 	
 	public Enemy() {
-		this.health = 100;
+//		this.health = 100;
 		this.speedX = 50;
 		this.speedY = 50;
 	}
