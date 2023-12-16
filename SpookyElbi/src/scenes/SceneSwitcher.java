@@ -4,21 +4,22 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
-import javafx.scene.Node;
+//import javafx.scene.Group;
+//import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+//import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
+//import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
+//import javafx.scene.paint.Color;
+//import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import application.GameStage;
 
 public class SceneSwitcher extends Application {
     private Scene scene1, scene2, scene3, scene4;
@@ -26,7 +27,8 @@ public class SceneSwitcher extends Application {
     @Override
     public void start(Stage primaryStage) {
     	primaryStage.setTitle("Spooki ELBI");
-
+    	GameStage gameStage = new GameStage(primaryStage);
+    	
         // Main Menu [Title]
         StackPane layout1 = new StackPane();
 
@@ -41,7 +43,7 @@ public class SceneSwitcher extends Application {
         buttonScreen.setAlignment(Pos.TOP_CENTER);
 
         buttonScreen.getChildren().addAll(
-        	clearButton(e -> primaryStage.setScene(scene1)),
+        	clearButton(e -> gameStage.runSpookyElbi()),
             clearButton(e -> primaryStage.setScene(scene2)),
             clearButton(e -> primaryStage.setScene(scene3)),
             clearButton(e -> primaryStage.setScene(scene4))

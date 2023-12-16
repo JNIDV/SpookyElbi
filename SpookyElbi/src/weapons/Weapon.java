@@ -6,10 +6,16 @@ import sprite.Sprite;
 public class Weapon extends Sprite {
 	public static final int AMMO_COUNT = 6;
 	
+	private long weaponDelay;
+	private long reloadDelay;
+	private double damage;
 	private ArrayList<Sprite> bullets;
 	public ArrayList<Sprite> shotBullets;
 	
-	public Weapon() {
+	public Weapon(long weaponDelay, long reloadDelay, double damage) {
+		this.weaponDelay = weaponDelay;
+		this.reloadDelay = reloadDelay;
+		this.damage = damage;
 		this.bullets = new ArrayList<Sprite>();
 		this.shotBullets = new ArrayList<Sprite>();
 		this.reload();
@@ -35,9 +41,21 @@ public class Weapon extends Sprite {
 			Sprite bullet = new Bullet();
 			this.bullets.add(bullet);
 			bullet.setImage("images\\pen.png", 10, 10);
-			((Bullet) bullet).setDamage(20);
+			((Bullet) bullet).setDamage(this.damage);
 		}
 		
 //		System.out.println("Current ammo: " + this.bullets.size());
+	}
+	
+	public long getWeaponDelay() {
+		return this.weaponDelay;
+	}
+	
+	public long getReloadDelay() {
+		return this.reloadDelay;
+	}
+	
+	public long getAmmoCount() {
+		return this.bullets.size();
 	}
 }

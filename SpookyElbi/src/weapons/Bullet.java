@@ -43,6 +43,7 @@ public class Bullet extends Sprite {
 			if (enemy.intersects(this)) {
 				collided = true;
 				((Enemy) enemy).decreaseHealth(this.damage);
+				((Enemy) enemy).turnRed();
 				break;
 			}
 		}

@@ -4,7 +4,7 @@ import sprite.Sprite;
 import weapons.Weapon;
 
 public class MainCharacter extends Sprite {
-	private int hearts;
+	private int hearts = 3;
 //	private Weapon weapon;
 	private boolean isMoving;
 	private int state;

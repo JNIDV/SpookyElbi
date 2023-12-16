@@ -2,7 +2,7 @@ package entities;
 
 import java.util.ArrayList;
 
-import sprite.Sprite;
+ import sprite.Sprite;
 
 public class Enemy extends Sprite {
 	public final static double SPEED_INCREASE = 0;
@@ -14,7 +14,7 @@ public class Enemy extends Sprite {
 	private double speedY;
 	
 	public Enemy() {
-		this.health = 20;
+		this.health = 40;
 		this.speedX = 50;
 		this.speedY = 50;
 	}
@@ -47,7 +47,7 @@ public class Enemy extends Sprite {
 	        	double otherDy = otherEnemy.getPositionY() - this.positionY;
 	        	double distance = Math.sqrt(otherDx * otherDx + otherDy * otherDy);
 
-	            // If too close to another enemy, adjust movement to avoid overlap
+	            // bump
 	        	this.directionX -= otherDx / distance;
 	        	this.directionY -= otherDy / distance;
 	        }
@@ -58,10 +58,14 @@ public class Enemy extends Sprite {
 			double otherDy = mainCharacter.getPositionY() - this.positionY;
 			double distance = Math.sqrt(otherDx * otherDx + otherDy * otherDy);
 
-            // If too close to mainCharacter, adjust movement to avoid overlap
+            // bump
 			this.directionX -= otherDx / distance;
 			this.directionY -= otherDy / distance;
 		}
+	}
+	
+	public void turnRed() {
+		
 	}
 	
 	public boolean isDead() {

@@ -12,11 +12,11 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
-//import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.event.EventHandler;
 
 import entities.Enemy;
@@ -25,15 +25,17 @@ import weapons.Bullet;
 import weapons.Weapon;
 
 import sprite.Sprite;
+import utils.CooldownTimer;
 import wrappers.LongValue;
 
 import java.util.Random;
 
 public class GameStage {
+	public static final long GAME_DURATION_NANO = 10 * 60 * 1_000_000_000L;
 	public static final int CANVAS_WIDTH = 2400;
 	public static final int CANVAS_HEIGHT = 2400;
-	public static final int VIEWPORT_WIDTH = 960;
-	public static final int VIEWPORT_HEIGHT = 540;
+	public static final int VIEWPORT_WIDTH = 1200;
+	public static final int VIEWPORT_HEIGHT = 800;
 	public static final double WEAPON_OFFSET_X = 40;
 	public static final double WEAPON_OFFSET_Y = 30;
 	public static final double CHARACTER_VELOCITY = 100;
@@ -45,7 +47,10 @@ public class GameStage {
 		"frontwalk.png",
 		"frontwalk2.png"
 	));
+	public static final Image HEART_IMAGE = new Image("images\\Heart.png", 30, 30, true, true);
+	public static final Image PEN_IMAGE   = new Image("images\\pen.png", 10, 10, true, true);
 	
+	private Text timerText;
 	private Stage stage;
 	private StackPane root;
 	private ScrollPane scrollPane;
@@ -58,23 +63,36 @@ public class GameStage {
 	private ArrayList<Sprite> enemies;
 	private ArrayList<String> input;
 	private boolean gameOver;
+	private CooldownTimer collisionTimer;
+	private CooldownTimer reloadTimer;
+	private CooldownTimer weaponTimer;
 	
 	public GameStage(Stage stage) {
+		this.timerText           = new Text();
 		this.stage               = stage;
 		this.entityCanvas        = new Canvas(GameStage.CANVAS_WIDTH, GameStage.CANVAS_HEIGHT);
 		this.scrollPane          = new ScrollPane(this.entityCanvas);
-		this.root                = new StackPane(this.scrollPane);
+		this.root                = new StackPane(this.scrollPane, this.timerText);
 		this.gameProperScene     = new Scene(this.root, GameStage.VIEWPORT_WIDTH, GameStage.VIEWPORT_HEIGHT);
 		this.random              = new Random();
 		this.graphicsContext     = this.entityCanvas.getGraphicsContext2D();
 		this.mainCharacter       = new MainCharacter();
-		this.weapon              = new Weapon();
+		this.weapon              = new Weapon(200, 3000, 20);
 		this.enemies             = new ArrayList<Sprite>();
 		this.input               = new ArrayList<String>();
 		this.gameOver            = false;
+		this.collisionTimer      = new CooldownTimer();
+		this.reloadTimer         = new CooldownTimer();
+		this.weaponTimer         = new CooldownTimer();
+	}
+	
+	public boolean isOver() {
+		return this.gameOver;
 	}
 	
 	public void runSpookyElbi() {
+		this.timerText.setFont(Font.font(30));
+		StackPane.setAlignment(timerText, javafx.geometry.Pos.TOP_RIGHT);
 		this.scrollPane.setPrefViewportWidth(GameStage.VIEWPORT_WIDTH);
 		this.scrollPane.setPrefViewportHeight(GameStage.VIEWPORT_HEIGHT);
 		this.scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
@@ -132,8 +150,9 @@ public class GameStage {
 						input.add(code);
 					}
 					
-					if (code == "R") {
+					if (!reloadTimer.isCooldownActive() && code == "R") {
 						((Weapon) weapon).reload();
+						reloadTimer.activateCooldown(((Weapon) weapon).getReloadDelay());
 					}
 				}
 			}
@@ -157,26 +176,27 @@ public class GameStage {
 			new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent mouseEvent) {
-					double x = mouseEvent.getSceneX();
-					double y = mouseEvent.getSceneY();
-					double targetX = x - GameStage.VIEWPORT_WIDTH / 2 - GameStage.WEAPON_OFFSET_X + weaponReference.getPositionX();
-					double targetY = y - GameStage.VIEWPORT_HEIGHT / 2 - GameStage.WEAPON_OFFSET_Y + weaponReference.getPositionY();
-					System.out.println("Shot at " + targetX + " " + targetY);
-					weaponReference.shoot(targetX, targetY);
+					if (!weaponTimer.isCooldownActive()) {
+						double x = mouseEvent.getSceneX();
+						double y = mouseEvent.getSceneY();
+						double targetX = x - GameStage.VIEWPORT_WIDTH / 2 - GameStage.WEAPON_OFFSET_X + weaponReference.getPositionX();
+						double targetY = y - GameStage.VIEWPORT_HEIGHT / 2 - GameStage.WEAPON_OFFSET_Y + weaponReference.getPositionY();
+						System.out.println("Shot at " + targetX + " " + targetY);
+						weaponReference.shoot(targetX, targetY);
+						weaponTimer.activateCooldown(((Weapon) weapon).getWeaponDelay());
+					}
 				}
 			}
 		);
 	}
 	
-	public void updateEntities(long currentNanoTime, LongValue lastNanoTime) {
+	public void updateMainCharacter(long currentNanoTime, LongValue lastNanoTime) {
 		double elapsedTime = (currentNanoTime - lastNanoTime.value) / 1e9;
-		lastNanoTime.value = currentNanoTime;
-		
 		this.mainCharacter.setVelocity(0, 0);
 		
 		if (this.input.contains("W") || this.input.contains("A") || this.input.contains("S") || this.input.contains("D")) {
 			((MainCharacter) this.mainCharacter).setIsMoving(true);
-			((MainCharacter) this.mainCharacter).setState((int) (currentNanoTime / 1e8) % 3);
+			((MainCharacter) this.mainCharacter).setState((int) (currentNanoTime / 2e8) % 3);
 		} else {
 			((MainCharacter) this.mainCharacter).setIsMoving(false);
 			((MainCharacter) this.mainCharacter).setState(0);
@@ -199,14 +219,23 @@ public class GameStage {
 		}
 		
 		this.mainCharacter.update(elapsedTime);
-		this.weapon.setPosition(
-			this.mainCharacter.getPositionX() + GameStage.WEAPON_OFFSET_X,
-			this.mainCharacter.getPositionY() + GameStage.WEAPON_OFFSET_Y
-		);
+	}
+	
+	public void removeDeadEnemies() {
+		Iterator<Sprite> enemyIterator = this.enemies.iterator();
 		
+		while (enemyIterator.hasNext()) {
+			Enemy enemy = (Enemy) enemyIterator.next();
+			
+			if (enemy.isDead()) {
+				enemyIterator.remove();
+			}
+		}
+	}
+	
+	public void updateEnemies(double elapsedTime) {
 		for (Sprite enemy : this.enemies) {
 			Enemy enemyE = (Enemy) enemy;
-			
 			enemyE.updateDirection(this.mainCharacter, this.enemies);
 			
 			double velocityX = enemyE.getDirectionX() * enemyE.getSpeedX();
@@ -217,17 +246,21 @@ public class GameStage {
 			
 			enemyE.speedUp(elapsedTime);
 			
-			if (enemy.intersects(this.mainCharacter)) {
-				((MainCharacter) this.mainCharacter).decreaseHeart();
-				
-//				if (((MainCharacter) this.mainCharacter).isDead()) {
-//					this.gameOver = true;
-//					return;
-//				}
+			if (!this.collisionTimer.isCooldownActive() && this.mainCharacter.intersects(enemy)) {
+			    ((MainCharacter) this.mainCharacter).decreaseHeart();
+			    this.collisionTimer.activateCooldown(1000);
+			}
+			
+			if (((MainCharacter) this.mainCharacter).isDead()) {
+				this.gameOver = true;
+				return;
 			}
 		}
 		
-		// Dead bullets
+		this.removeDeadEnemies();
+	}
+	
+	public void updateBullets(double elapsedTime) {
 		Iterator<Sprite> bulletIterator = ((Weapon) this.weapon).shotBullets.iterator();
 		
 		while (bulletIterator.hasNext()) {
@@ -244,17 +277,20 @@ public class GameStage {
 				bulletIterator.remove();
 			}
 		}
-		
-		// Dead enemies
-		Iterator<Sprite> enemyIterator = this.enemies.iterator();
-		
-		while (enemyIterator.hasNext()) {
-			Enemy enemy = (Enemy) enemyIterator.next();
+	}
+	
+	public void updateEntities(long currentNanoTime, LongValue lastNanoTime) {
+		double elapsedTime = (currentNanoTime - lastNanoTime.value) / 1e9;
 			
-			if (enemy.isDead()) {
-				enemyIterator.remove();
-			}
-		}
+		this.updateMainCharacter(currentNanoTime, lastNanoTime);
+		this.weapon.setPosition(
+			this.mainCharacter.getPositionX() + GameStage.WEAPON_OFFSET_X,
+			this.mainCharacter.getPositionY() + GameStage.WEAPON_OFFSET_Y
+		);
+		this.updateEnemies(elapsedTime);
+		this.updateBullets(elapsedTime);
+		
+		lastNanoTime.value = currentNanoTime;
 	}
 	
 	public void renderEntities() {
@@ -275,6 +311,9 @@ public class GameStage {
 		for (Sprite bullet : ((Weapon) this.weapon).shotBullets) {
 			bullet.render(this.graphicsContext);
 		}
+		
+		this.displayHearts();
+		this.displayAmmo();
 	}
 	
 	public void updateArea() {
@@ -284,18 +323,53 @@ public class GameStage {
         this.scrollPane.setVvalue(viewportY / (GameStage.CANVAS_HEIGHT - GameStage.VIEWPORT_HEIGHT));
 	}
 	
+	public void displayHearts() {
+		for (int i = 0; i < ((MainCharacter) this.mainCharacter).getHearts(); i++) {
+			this.graphicsContext.drawImage(GameStage.HEART_IMAGE, 
+				this.mainCharacter.getPositionX() - (GameStage.VIEWPORT_WIDTH / 2) + i * 35 + 10, 
+				this.mainCharacter.getPositionY() - (GameStage.VIEWPORT_HEIGHT / 2) + 10
+			);
+		}
+	}
+	
+	public void displayAmmo() {
+		if (!this.reloadTimer.isCooldownActive()) {
+			this.graphicsContext.strokeText(
+				"Reload ready!", 
+				this.mainCharacter.getPositionX() - (GameStage.VIEWPORT_WIDTH / 2) + 100, 
+				this.mainCharacter.getPositionY() + (GameStage.VIEWPORT_HEIGHT / 2) - 20
+			);
+		}
+		
+		for (int i = 0; i < ((Weapon) this.weapon).getAmmoCount(); i++) {
+			this.graphicsContext.drawImage(GameStage.PEN_IMAGE, 
+				this.mainCharacter.getPositionX() - (GameStage.VIEWPORT_WIDTH / 2) + i * 15 + 10, 
+				this.mainCharacter.getPositionY() + (GameStage.VIEWPORT_HEIGHT / 2) - 20
+			);
+		}
+	}
+	
 	public void runAnimation() {
 		GameStage selfReference = this;
-		LongValue lastNanoTime = new LongValue(System.nanoTime());
+		LongValue startNanoTime = new LongValue(System.nanoTime());
+		LongValue lastNanoTime = new LongValue(startNanoTime.value);
 		
 		new AnimationTimer() {
 			@Override
 			public void handle(long currentNanoTime) {
+				long remainingTime = (GAME_DURATION_NANO - (currentNanoTime - startNanoTime.value)) / 1_000_000_000L;
 //				System.out.println("Current nano time: " + currentNanoTime);
 				selfReference.updateEntities(currentNanoTime, lastNanoTime);
 				selfReference.updateArea();
 				selfReference.renderEntities();
-				System.out.println("Hearts: " + ((MainCharacter) selfReference.mainCharacter).getHearts());
+//				System.out.println("Hearts: " + ((MainCharacter) selfReference.mainCharacter).getHearts());
+				
+				if (remainingTime <= 0) {
+					remainingTime = 0;
+					stop();
+				}
+				
+				timerText.setText("Time Remaining: " + remainingTime / 60 + " : " + remainingTime % 60);
 				
 				if (selfReference.gameOver) {
 					this.stop();
