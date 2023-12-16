@@ -2,10 +2,10 @@ package entities;
 
 import java.util.ArrayList;
 
- import sprite.Sprite;
+import sprite.Sprite;
 
 public class Enemy extends Sprite {
-	public final static double SPEED_INCREASE = 0;
+	public final static double SPEED_INCREASE = 5;
 	
 	private double health;
 	private double directionX;

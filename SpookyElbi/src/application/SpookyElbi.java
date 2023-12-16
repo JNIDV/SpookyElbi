@@ -8,7 +8,7 @@ import javafx.geometry.Pos;
 //import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
+//import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 //import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -35,7 +35,7 @@ public class SpookyElbi extends Application {
         StackPane layout1 = new StackPane();
 
         Canvas canvas = new Canvas(1200, 800);
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+//        GraphicsContext gc = canvas.getGraphicsContext2D();
         Image bg = new Image("scenes\\Menu.png", 1200, 900, true, true);
         ImageView iv1 = new ImageView();
         iv1.setPreserveRatio(true);

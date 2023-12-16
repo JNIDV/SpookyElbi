@@ -5,31 +5,31 @@ import java.util.TimerTask;
 
 public class CooldownTimer {
 	private Timer timer;
-    private boolean isCooldownActive = false;
+    private boolean isActiveCooldown = false;
 
     public CooldownTimer() {
         this.timer = new Timer();
     }
 
-    public void activateCooldown(long cooldownDurationMillis) {
-        if (!isCooldownActive) {
-            isCooldownActive = true;
+    public void activateCooldown(long delay) {
+        if (!this.isActiveCooldown) {
+            this.isActiveCooldown = true;
 
-            timer.schedule(
+            this.timer.schedule(
             	new TimerTask() {
             		@Override
             		public void run() {
-            			isCooldownActive = false;
+            			isActiveCooldown = false;
             			System.out.println("Hello!");
-            			cancel(); // Cancel the TimerTask after cooldown duration
+            			cancel();
             		}
             	}, 
-            	cooldownDurationMillis
+            	delay
     		);
         }
     }
 
-    public boolean isCooldownActive() {
-        return isCooldownActive;
+    public boolean isActiveCooldown() {
+        return this.isActiveCooldown;
     }
 }

@@ -66,6 +66,7 @@ public class GameStage {
 	private CooldownTimer collisionTimer;
 	private CooldownTimer reloadTimer;
 	private CooldownTimer weaponTimer;
+	private CooldownTimer spawnTimer;
 	
 	public GameStage(Stage stage) {
 		this.timerText           = new Text();
@@ -84,6 +85,7 @@ public class GameStage {
 		this.collisionTimer      = new CooldownTimer();
 		this.reloadTimer         = new CooldownTimer();
 		this.weaponTimer         = new CooldownTimer();
+		this.spawnTimer          = new CooldownTimer();
 	}
 	
 	public boolean isOver() {
@@ -99,7 +101,6 @@ public class GameStage {
 		this.scrollPane.setVbarPolicy(ScrollBarPolicy.NEVER);
 		this.setMainCharacter("images\\mainCharacter.png");
 		this.setWeapon("images\\pen.png");
-		this.spawnEnemies(10, "images\\Frog.png");
 		this.handleKeyEvents();
 		this.handleMouseEvents();
 		this.stage.setTitle("Spooky Elbi");
@@ -150,7 +151,7 @@ public class GameStage {
 						input.add(code);
 					}
 					
-					if (!reloadTimer.isCooldownActive() && code == "R") {
+					if (!reloadTimer.isActiveCooldown() && code == "R") {
 						((Weapon) weapon).reload();
 						reloadTimer.activateCooldown(((Weapon) weapon).getReloadDelay());
 					}
@@ -176,7 +177,7 @@ public class GameStage {
 			new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent mouseEvent) {
-					if (!weaponTimer.isCooldownActive()) {
+					if (!weaponTimer.isActiveCooldown()) {
 						double x = mouseEvent.getSceneX();
 						double y = mouseEvent.getSceneY();
 						double targetX = x - GameStage.VIEWPORT_WIDTH / 2 - GameStage.WEAPON_OFFSET_X + weaponReference.getPositionX();
@@ -246,7 +247,7 @@ public class GameStage {
 			
 			enemyE.speedUp(elapsedTime);
 			
-			if (!this.collisionTimer.isCooldownActive() && this.mainCharacter.intersects(enemy)) {
+			if (!this.collisionTimer.isActiveCooldown() && this.mainCharacter.intersects(enemy)) {
 			    ((MainCharacter) this.mainCharacter).decreaseHeart();
 			    this.collisionTimer.activateCooldown(1000);
 			}
@@ -333,7 +334,7 @@ public class GameStage {
 	}
 	
 	public void displayAmmo() {
-		if (!this.reloadTimer.isCooldownActive()) {
+		if (!this.reloadTimer.isActiveCooldown()) {
 			this.graphicsContext.strokeText(
 				"Reload ready!", 
 				this.mainCharacter.getPositionX() - (GameStage.VIEWPORT_WIDTH / 2) + 100, 
@@ -369,12 +370,16 @@ public class GameStage {
 					stop();
 				}
 				
-				timerText.setText("Time Remaining: " + remainingTime / 60 + " : " + remainingTime % 60 + "  ");
+				timerText.setText("Time Remaining: " + remainingTime / 60 + " : " + remainingTime % 60 + " ");
 				
 				if (selfReference.gameOver) {
 					this.stop();
 				}
 				
+				if (!spawnTimer.isActiveCooldown()) {
+					spawnEnemies(10, "images\\Frog.png");
+					spawnTimer.activateCooldown(30000);
+				}				
 //				System.out.println("Main character position: " + selfReference.mainCharacter.getPositionX() + " " + selfReference.mainCharacter.getPositionY());
 			}
 		}.start();
