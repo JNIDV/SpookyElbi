@@ -369,7 +369,7 @@ public class GameStage {
 					stop();
 				}
 				
-				timerText.setText("Time Remaining: " + remainingTime / 60 + " : " + remainingTime % 60);
+				timerText.setText("Time Remaining: " + remainingTime / 60 + " : " + remainingTime % 60 + "  ");
 				
 				if (selfReference.gameOver) {
 					this.stop();
