@@ -50,6 +50,15 @@ public class Bullet extends Sprite {
 		return collided;
 	}
 	
+	@Override
+	public void update(double time) {
+		Sprite selfReference = this;
+		selfReference.setPosition(
+			selfReference.getPositionX() + selfReference.getVelocityX() * time,
+			selfReference.getPositionY() + selfReference.getVelocityY() * time
+		);	
+	}
+	
 	public double getDirectionX() {
 		return this.directionX;
 	}

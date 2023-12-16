@@ -28,4 +28,20 @@ public class MainCharacter extends Sprite {
 	public void setState(int state) {
 		this.state = state;
 	}
+	
+	public void decreaseHeart() {
+		this.hearts--;
+	}
+	
+	public boolean isDead() {
+		return this.hearts <= 0;
+	}
+	
+	public int getHearts() {
+		return this.hearts;
+	}
+	
+	public void setHearts(int hearts) {
+		this.hearts = hearts;
+	}
 }

@@ -1,5 +1,7 @@
 package sprite;
 
+import java.util.ArrayList;
+
 import application.GameStage;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.SnapshotParameters;
@@ -74,8 +76,24 @@ public class Sprite {
 		} else if (this.positionY <= GameStage.VIEWPORT_HEIGHT / 2) {
 			this.positionY = GameStage.VIEWPORT_HEIGHT / 2;
 		}
-		
 //		System.out.println(positionX + " " + positionY);
+	}
+	
+	public void update(double time, ArrayList<Sprite> enemies) {
+		this.positionX += velocityX * time;
+		this.positionY += velocityY * time;
+		
+		if (this.positionX + this.width >= GameStage.CANVAS_WIDTH - GameStage.VIEWPORT_WIDTH / 2) {
+			this.positionX = GameStage.CANVAS_WIDTH - this.width - GameStage.VIEWPORT_WIDTH / 2;
+		} else if (this.positionX <= GameStage.VIEWPORT_WIDTH / 2) {
+			this.positionX = GameStage.VIEWPORT_WIDTH / 2;
+		}
+		
+		if (this.positionY + this.height >= GameStage.CANVAS_HEIGHT - GameStage.VIEWPORT_HEIGHT / 2) {
+			this.positionY = GameStage.CANVAS_HEIGHT - this.height - GameStage.VIEWPORT_HEIGHT / 2;
+		} else if (this.positionY <= GameStage.VIEWPORT_HEIGHT / 2) {
+			this.positionY = GameStage.VIEWPORT_HEIGHT / 2;
+		}
 	}
 	
 	public void render(GraphicsContext graphicsContext) {
@@ -107,5 +125,13 @@ public class Sprite {
 	
 	public double getPositionY() {
 		return this.positionY;
+	}
+	
+	public double getVelocityX() {
+		return this.velocityX;
+	}
+	
+	public double getVelocityY() {
+		return this.velocityY;
 	}
 }

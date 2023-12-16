@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
 //import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
@@ -56,6 +57,7 @@ public class GameStage {
 	private Sprite weapon;
 	private ArrayList<Sprite> enemies;
 	private ArrayList<String> input;
+	private boolean gameOver;
 	
 	public GameStage(Stage stage) {
 		this.stage               = stage;
@@ -69,11 +71,14 @@ public class GameStage {
 		this.weapon              = new Weapon();
 		this.enemies             = new ArrayList<Sprite>();
 		this.input               = new ArrayList<String>();
+		this.gameOver            = false;
 	}
 	
 	public void runSpookyElbi() {
 		this.scrollPane.setPrefViewportWidth(GameStage.VIEWPORT_WIDTH);
 		this.scrollPane.setPrefViewportHeight(GameStage.VIEWPORT_HEIGHT);
+		this.scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
+		this.scrollPane.setVbarPolicy(ScrollBarPolicy.NEVER);
 		this.setMainCharacter("images\\mainCharacter.png");
 		this.setWeapon("images\\pen.png");
 		this.spawnEnemies(10, "images\\Frog.png");
@@ -87,7 +92,8 @@ public class GameStage {
 	
 	public void setMainCharacter(String imageFilename) {
 		this.mainCharacter.setImage(imageFilename, GameStage.CHARACTER_SIDE, GameStage.CHARACTER_SIDE);
-		this.mainCharacter.setPosition(GameStage.CANVAS_WIDTH / 2, GameStage.CANVAS_HEIGHT);
+		this.mainCharacter.setPosition(GameStage.CANVAS_WIDTH / 2, GameStage.CANVAS_HEIGHT / 2);
+		((MainCharacter) this.mainCharacter).setHearts(3);
 	}
 	
 	public void setWeapon(String imageFilename) {
@@ -210,6 +216,15 @@ public class GameStage {
 			enemy.update(elapsedTime);
 			
 			enemyE.speedUp(elapsedTime);
+			
+			if (enemy.intersects(this.mainCharacter)) {
+				((MainCharacter) this.mainCharacter).decreaseHeart();
+				
+//				if (((MainCharacter) this.mainCharacter).isDead()) {
+//					this.gameOver = true;
+//					return;
+//				}
+			}
 		}
 		
 		// Dead bullets
@@ -223,7 +238,7 @@ public class GameStage {
 			double velocityY = bulletE.getDirectionY() * Bullet.BULLET_SPEED;
 			
 			bullet.setVelocity(velocityX, velocityY);
-			bullet.update(elapsedTime);
+			bulletE.update(elapsedTime);
 			
 			if (bulletE.checkEnemiesCollision(this.enemies) || bulletE.reachedMaxRange()) {
 				bulletIterator.remove();
@@ -262,41 +277,30 @@ public class GameStage {
 		}
 	}
 	
-	public void updateArea(Rectangle smallArea) {
+	public void updateArea() {
 		double viewportX = Math.max(0, this.mainCharacter.getPositionX() - (GameStage.VIEWPORT_WIDTH / 2));
         double viewportY = Math.max(0, this.mainCharacter.getPositionY() - (GameStage.VIEWPORT_HEIGHT / 2));
-		smallArea.setX(viewportX);
-		smallArea.setY(viewportY);
-		
-		if (viewportX + GameStage.VIEWPORT_WIDTH > GameStage.CANVAS_WIDTH) {
-            smallArea.setWidth(GameStage.CANVAS_WIDTH - viewportX);
-        } else {
-        	smallArea.setWidth(GameStage.VIEWPORT_WIDTH);
-        }
-
-        if (viewportY + GameStage.VIEWPORT_HEIGHT > GameStage.CANVAS_HEIGHT) {
-        	smallArea.setHeight(GameStage.CANVAS_HEIGHT - viewportY);
-        } else {
-        	smallArea.setHeight(GameStage.VIEWPORT_HEIGHT);
-        }
-        
-        scrollPane.setHvalue(smallArea.getX() / (GameStage.CANVAS_WIDTH - GameStage.VIEWPORT_WIDTH));
-        scrollPane.setVvalue(smallArea.getY() / (GameStage.CANVAS_HEIGHT - GameStage.VIEWPORT_HEIGHT));
+        this.scrollPane.setHvalue(viewportX / (GameStage.CANVAS_WIDTH - GameStage.VIEWPORT_WIDTH));
+        this.scrollPane.setVvalue(viewportY / (GameStage.CANVAS_HEIGHT - GameStage.VIEWPORT_HEIGHT));
 	}
 	
 	public void runAnimation() {
 		GameStage selfReference = this;
 		LongValue lastNanoTime = new LongValue(System.nanoTime());
-		Rectangle smallArea = new Rectangle(GameStage.VIEWPORT_WIDTH, GameStage.VIEWPORT_HEIGHT);
-		this.entityCanvas.setClip(smallArea);
 		
 		new AnimationTimer() {
 			@Override
 			public void handle(long currentNanoTime) {
 //				System.out.println("Current nano time: " + currentNanoTime);
 				selfReference.updateEntities(currentNanoTime, lastNanoTime);
-				selfReference.updateArea(smallArea);
+				selfReference.updateArea();
 				selfReference.renderEntities();
+				System.out.println("Hearts: " + ((MainCharacter) selfReference.mainCharacter).getHearts());
+				
+				if (selfReference.gameOver) {
+					this.stop();
+				}
+				
 //				System.out.println("Main character position: " + selfReference.mainCharacter.getPositionX() + " " + selfReference.mainCharacter.getPositionY());
 			}
 		}.start();
