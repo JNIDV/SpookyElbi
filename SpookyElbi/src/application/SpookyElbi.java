@@ -1,3 +1,12 @@
+/********************************************************
+ * 
+ * 
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 10:44 2023-12-04
+ * 
+ ********************************************************/
+
 package application;
 
 import javafx.application.Application;
@@ -48,7 +57,7 @@ public class SpookyElbi extends Application {
         	clearButton(e -> gameStage.runSpookyElbi()),
             clearButton(e -> primaryStage.setScene(scene2)),
             clearButton(e -> primaryStage.setScene(scene3)),
-            clearButton(e -> primaryStage.setScene(scene4))
+            clearButton(e -> primaryStage.close())
         );
 
         layout1.getChildren().addAll(
@@ -88,19 +97,19 @@ public class SpookyElbi extends Application {
         scene3 = new Scene(layout3, 1200, 680);
 
         // Exit
-        StackPane layout4 = new StackPane();
-
-        VBox returnScreen4 = returnScreen(e -> primaryStage.setScene(scene1));
-        Image bg4 = createimg("scenes\\settings.png");
-        ImageView iv4 = new ImageView();
-        iv4.setPreserveRatio(true);
-        iv4.setImage(bg4);
-
-        layout4.getChildren().addAll(
-        	iv4, returnScreen4
-        );
-
-        scene4 = new Scene(layout4, 1200, 680);
+//        StackPane layout4 = new StackPane();
+//
+//        VBox returnScreen4 = returnScreen(e -> primaryStage.setScene(scene1));
+//        Image bg4 = createimg("scenes\\settings.png");
+//        ImageView iv4 = new ImageView();
+//        iv4.setPreserveRatio(true);
+//        iv4.setImage(bg4);
+//
+//        layout4.getChildren().addAll(
+//        	iv4, returnScreen4
+//        );
+//
+//        scene4 = new Scene(layout4, 1200, 680);
 
         primaryStage.setScene(scene1);
         primaryStage.setTitle("Spooky Elbi");

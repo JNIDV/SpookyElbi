@@ -1,3 +1,12 @@
+/********************************************************
+ * 
+ * 
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 10:44 2023-12-04
+ * 
+ ********************************************************/
+
 package application;
 
 import java.util.ArrayList;
@@ -49,6 +58,7 @@ public class GameStage {
 	));
 	public static final Image HEART_IMAGE = new Image("images\\Heart.png", 30, 30, true, true);
 	public static final Image PEN_IMAGE   = new Image("images\\pen.png", 10, 10, true, true);
+	public static final Image MAP_IMAGE   = new Image("images\\roughMap.png", CANVAS_WIDTH, CANVAS_HEIGHT, true, true);
 	
 	private Text timerText;
 	private Stage stage;
@@ -296,7 +306,7 @@ public class GameStage {
 	
 	public void renderEntities() {
 		this.graphicsContext.clearRect(0, 0, GameStage.CANVAS_WIDTH, GameStage.CANVAS_HEIGHT);
-		this.graphicsContext.drawImage(new Image("images\\UPLB-Map-Main-Campus.png"), 0, 0);
+		this.graphicsContext.drawImage(GameStage.MAP_IMAGE, 0, 0);
 		this.mainCharacter.setImage(
 			"characterimages\\" + GameStage.MAIN_CHARACTER_FRAME.get(((MainCharacter) this.mainCharacter).getState()), 
 			GameStage.CHARACTER_SIDE, 
