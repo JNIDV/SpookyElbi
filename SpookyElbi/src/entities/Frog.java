@@ -13,5 +13,6 @@ public class Frog extends Enemy {
 		super(FROG_HEALTH, FROG_SPEED, FROG_SPEED);
 		((Sprite) this).setImage(FROG_IMAGE, 50, 50);
 		((Sprite) this).setRedImage(FROG_RED_IMAGE);
+		this.drops = 1;
 	}
 }

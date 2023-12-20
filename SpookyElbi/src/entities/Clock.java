@@ -13,5 +13,6 @@ public class Clock extends Enemy {
 		super(CLOCK_HEALTH, CLOCK_SPEED, CLOCK_SPEED);
 		((Sprite) this).setImage(CLOCK_IMAGE, 50, 50);
 		((Sprite) this).setRedImage(CLOCK_RED_IMAGE);
+		this.drops = 3;
 	}
 }

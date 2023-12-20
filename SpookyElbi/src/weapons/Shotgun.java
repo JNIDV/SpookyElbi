@@ -1,42 +1,45 @@
 package weapons;
 
 import javafx.scene.image.Image;
-import sprite.Sprite;
 
 public class Shotgun extends Weapon {
-	public static final long SHOTGUN_DELAY = 700;
+	public static final long SHOTGUN_DELAY = 1200;
 	public static final long SHOTGUN_RELOAD_DELAY = 4000;
 	public static final long SHOTGUN_DAMAGE = 100;
 	public static final double SHOTGUN_BULLET_SPEED = 500;
 	public static final double SHOTGUN_MAX_DISTANCE = 400;
 	public static final Image SHOTGUN_IMAGE = new Image("images\\shotgun.png", 30, 30, true, true);
 	public static final String SHOTGUN_BULLET_IMAGE = "images\\shotgunShell.png";
+	public static final String SHOTGUN_MP3 = "shotgun.mp3";
+	public static final String SHOTGUN_RELOAD_MP3 = "shotgunReload.mp3";
 	
 	public Shotgun() {
 		super(SHOTGUN_DELAY, SHOTGUN_RELOAD_DELAY, SHOTGUN_DAMAGE);
-		((Sprite) this).setImage(SHOTGUN_IMAGE);
-		((Weapon) this).setAmmoCount(9);
-		((Weapon) this).setBulletImage(SHOTGUN_BULLET_IMAGE);
+		this.setImage(SHOTGUN_IMAGE);
+		this.setAmmoCount(15);
+		this.setBulletImage(SHOTGUN_BULLET_IMAGE);
 		this.bulletSpeed = SHOTGUN_BULLET_SPEED;
 		this.maxDistance = SHOTGUN_MAX_DISTANCE;
+		this.soundFile = SHOTGUN_MP3;
+		this.reloadFile = SHOTGUN_RELOAD_MP3;
+		this.reload();
 	}
 	
-	public void shoot(double x, double y) {
-		super.shoot(x, y);
+	@Override
+	public boolean shoot(double x, double y) {
+		double angleOffset = Math.PI / 24;
 		
-		for (int i = 0; i <= 2; i += 2) {
-			Sprite removedBullet = this.bullets.remove(this.bullets.size() - 1);
-			Sprite selfReference = this;
-			((Bullet) removedBullet).setStarting(selfReference.getPositionX(), selfReference.getPositionY());
-			double dx = x - selfReference.getPositionX();
-			double dy = y - selfReference.getPositionY();
-			((Bullet) removedBullet).setDirection(
-				selfReference.getPositionX() + dx * Math.cos(Math.PI / 12 * (i - 1)) - dy * Math.sin(Math.PI / 12 * (i - 1)), 
-				selfReference.getPositionY() + dx * Math.sin(Math.PI / 12 * (i - 1)) + dy * Math.cos(Math.PI / 12 * (i - 1)), 
-				this
-			);
-			this.shotBullets.add(removedBullet);
-			removedBullet.setPosition(this.positionX, this.positionY);
+		for (int i = -2; i <= 2; i++) {
+			double dx = x - this.getPositionX(), dy = y - this.getPositionY();
+			double x1 = this.getPositionX() + dx * Math.cos(angleOffset * i) - dy * Math.sin(angleOffset * i);
+			double y1 = this.getPositionY() + dx * Math.sin(angleOffset * i) + dy * Math.cos(angleOffset * i);
+			
+			if (!super.shootNoSound(x1, y1)) {
+				return false;
+			}
 		}
+		
+		this.playShotSound();
+		return true;
 	}
 }

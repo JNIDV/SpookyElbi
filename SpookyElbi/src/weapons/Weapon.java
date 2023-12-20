@@ -22,6 +22,7 @@ public class Weapon extends Sprite {
 	protected double bulletSpeed;
 	protected double maxDistance;
 	protected String soundFile;
+	protected String reloadFile;
 	protected ArrayList<Sprite> bullets;
 	public ArrayList<Sprite> shotBullets;
 	
@@ -31,7 +32,6 @@ public class Weapon extends Sprite {
 		this.damage = damage;
 		this.bullets = new ArrayList<Sprite>();
 		this.shotBullets = new ArrayList<Sprite>();
-		this.reload();
 	}
 	
 	public void setBulletImage(String bulletImage) {
@@ -42,25 +42,31 @@ public class Weapon extends Sprite {
 		this.ammoCount = ammoCount;
 	}
 	
-	public void shoot(double x, double y) {
-		if (this.bullets.isEmpty()) {
-			return;
+	public boolean shoot(double x, double y) {
+		if (!shootNoSound(x, y)) {
+			return false;
 		}
 		
 		this.playShotSound();
-		Sprite removedBullet = this.bullets.remove(this.bullets.size() - 1);
-		Sprite selfReference = this;
-		((Bullet) removedBullet).setStarting(selfReference.getPositionX(), selfReference.getPositionY());
-		((Bullet) removedBullet).setDirection(x, y, this);
-		this.shotBullets.add(removedBullet);
-		removedBullet.setPosition(this.positionX, this.positionY);
+		return true;
 	}
 	
-	public void playShotSound() {
+	public boolean shootNoSound(double x, double y) {
+		if (this.bullets.isEmpty()) {
+			return false;
+		}
+		
+		Bullet removedBullet = (Bullet) this.bullets.remove(this.bullets.size() - 1);
+		removedBullet.setStarting(this.getPositionX(), this.getPositionY());
+		removedBullet.setDirection(x, y, this);
+		removedBullet.setPosition(this.positionX, this.positionY);
+		this.shotBullets.add(removedBullet);
+		return true;
+	}
+	
+	protected void playShotSound() {
 		try {
             AudioClip shotSound = new AudioClip(getClass().getResource("/audio/" + this.soundFile).toString());
-            
-            // Play the sound
             shotSound.play();
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,6 +81,20 @@ public class Weapon extends Sprite {
 			bullet.setImage(this.bulletImage, 10, 10);
 			((Bullet) bullet).setDamage(this.damage);
 		}
+	}
+	
+	public void reloadWithSound() {
+		this.playReloadSound();
+		this.reload();
+	}
+	
+	private void playReloadSound() {
+		try {
+            AudioClip reloadSound = new AudioClip(getClass().getResource("/audio/" + this.reloadFile).toString());
+            reloadSound.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 	
 	public long getWeaponDelay() {

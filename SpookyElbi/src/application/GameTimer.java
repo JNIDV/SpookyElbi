@@ -9,8 +9,6 @@
 
 package application;
 
-import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -33,6 +31,7 @@ import entities.Clock;
 import entities.Enemy;
 import entities.Exam;
 import entities.Frog;
+import entities.Gem;
 import entities.MainCharacter;
 import weapons.Bullet;
 import weapons.Pen;
@@ -70,6 +69,7 @@ public class GameTimer extends AnimationTimer {
 	public static final Image PEN_IMAGE   = new Image("images\\pen.png", 10, 10, true, true);
 	public static final Image MAP_IMAGE   = new Image("images\\map.png", CANVAS_WIDTH, CANVAS_HEIGHT, true, true);
 	public static final ArrayList<String> MUSIC_PLAYLIST = new ArrayList<String>(Arrays.asList(
+		"scary1.mp3",
 		"nightShade.mp3",
 		"aNightOfDizzySpells.mp3",
 		"maze.mp3",
@@ -89,6 +89,7 @@ public class GameTimer extends AnimationTimer {
 	
 	private ArrayList<Sprite> enemies;
 	private ArrayList<String> input;
+	private ArrayList<Sprite> gems;
 	
 	private CooldownTimer collisionTimer;
 	private CooldownTimer reloadTimer;
@@ -96,6 +97,7 @@ public class GameTimer extends AnimationTimer {
 	private CooldownTimer frogSpawnTimer;
 	private CooldownTimer clockSpawnTimer;
 	private CooldownTimer examSpawnTimer;
+	private CooldownTimer harderTimer;
 	
 	private LongValue startNanoTime;
 	private LongValue lastNanoTime;
@@ -124,6 +126,7 @@ public class GameTimer extends AnimationTimer {
 		this.weapon          = new Pen();
 		this.enemies         = new ArrayList<Sprite>();
 		this.input           = new ArrayList<String>();
+		this.gems            = new ArrayList<Sprite>();
 		this.gameOver        = false;
 		this.collisionTimer  = new CooldownTimer();
 		this.reloadTimer     = new CooldownTimer();
@@ -131,6 +134,7 @@ public class GameTimer extends AnimationTimer {
 		this.frogSpawnTimer  = new CooldownTimer();
 		this.clockSpawnTimer = new CooldownTimer();
 		this.examSpawnTimer  = new CooldownTimer();
+		this.harderTimer     = new CooldownTimer();
 		this.gemCount        = 0;
 	}
 	
@@ -157,16 +161,11 @@ public class GameTimer extends AnimationTimer {
 	
 	public void playMusic(String fileName) {
         try {
-            InputStream inputStream = getClass().getResourceAsStream("/audio/" + fileName);
-            String fullPath = inputStream != null ? new File("").toURI().relativize(new File(fileName).toURI()).getPath() : null;
-
-            if (fullPath != null) {
-                Media music = new Media(getClass().getResource("/audio/" + fileName).toExternalForm());
-                this.musicPlayer = new MediaPlayer(music);
-                this.musicPlayer.setVolume(0.5);
-                this.musicPlayer.setOnEndOfMedia(this::playNextMusic);
-                this.musicPlayer.play();
-            }
+            Media music = new Media(getClass().getResource("/audio/" + fileName).toExternalForm());
+            this.musicPlayer = new MediaPlayer(music);
+            this.musicPlayer.setVolume(0.5);
+            this.musicPlayer.setOnEndOfMedia(this::playNextMusic);
+            this.musicPlayer.play();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -194,14 +193,12 @@ public class GameTimer extends AnimationTimer {
 	public void setWeapon(String imageFilename) {
 		this.weapon.setImage(imageFilename, GameTimer.WEAPON_SIDE, GameTimer.WEAPON_SIDE);
 		this.weapon.setPosition(GameTimer.CANVAS_WIDTH / 2 + 10, GameTimer.CANVAS_HEIGHT);
-		((Sprite) this.weapon).rotateImage(-45);
 		((Weapon) this.weapon).reload();
 	}
 	
 	public void setWeapon(Weapon weapon) {
 		this.weapon = weapon;
 		this.weapon.setPosition(GameTimer.CANVAS_WIDTH / 2 + 20, GameTimer.CANVAS_HEIGHT);
-		((Sprite) this.weapon).rotateImage(-45);
 		((Weapon) this.weapon).reload();
 	}
 	
@@ -247,7 +244,7 @@ public class GameTimer extends AnimationTimer {
 					}
 					
 					if (!reloadTimer.isActiveCooldown() && code == "R") {
-						((Weapon) weapon).reload();
+						((Weapon) weapon).reloadWithSound();
 						reloadTimer.activateCooldown(((Weapon) weapon).getReloadDelay());
 					}
 				}
@@ -324,9 +321,28 @@ public class GameTimer extends AnimationTimer {
 			Enemy enemy = (Enemy) enemyIterator.next();
 			
 			if (enemy.isDead()) {
-				this.gemCount++;
+				for (int i = 0; i < enemy.getDrops(); i++) {
+					double randomOffset = this.random.nextInt(10);
+					Sprite gem = new Gem(((Sprite) enemy).getPositionX() + randomOffset, ((Sprite) enemy).getPositionY() + randomOffset);
+					this.gems.add(gem);
+				}
+				
 				System.out.println("Gem count: " + this.gemCount);
 				enemyIterator.remove();
+			}
+		}
+	}
+	
+	public void removeGems() {
+		Iterator<Sprite> gemIterator = this.gems.iterator();
+		
+		while (gemIterator.hasNext()) {
+			Sprite gem = gemIterator.next();
+			
+			if (this.mainCharacter.intersects(gem)) {
+				this.gemCount++;
+				((Gem) gem).playSound();
+				gemIterator.remove();
 			}
 		}
 	}
@@ -341,8 +357,6 @@ public class GameTimer extends AnimationTimer {
 			
 			enemy.setVelocity(velocityX, velocityY);
 			enemy.update(elapsedTime);
-			
-			enemyE.speedUp(elapsedTime);
 			
 			if (!this.collisionTimer.isActiveCooldown() && this.mainCharacter.intersects(enemy)) {
 			    ((MainCharacter) this.mainCharacter).decreaseHeart();
@@ -396,18 +410,33 @@ public class GameTimer extends AnimationTimer {
 		);
 		this.updateEnemies(elapsedTime);
 		this.updateBullets(elapsedTime);
+		this.removeGems();
 		
 		lastNanoTime.value = currentNanoTime;
+	}
+	
+	public void hardenEnemies() {
+		for (Sprite enemy : this.enemies) {
+			((Enemy) enemy).speedUp();
+		}
 	}
 	
 	public void renderEntities() {
 		this.graphicsContext.clearRect(0, 0, GameTimer.CANVAS_WIDTH, GameTimer.CANVAS_HEIGHT);
 		this.graphicsContext.drawImage(GameTimer.MAP_IMAGE, 0, 0);
-		this.mainCharacter.setImage(
-			"characterimages\\" + GameTimer.MAIN_CHARACTER_FRAME.get(((MainCharacter) this.mainCharacter).getState()), 
-			GameTimer.CHARACTER_SIDE, 
-			GameTimer.CHARACTER_SIDE
-		);
+		
+		if (!((MainCharacter) this.mainCharacter).isHit) {
+			this.mainCharacter.setImage(
+				"characterimages\\" + GameTimer.MAIN_CHARACTER_FRAME.get(((MainCharacter) this.mainCharacter).getState()), 
+				GameTimer.CHARACTER_SIDE, 
+				GameTimer.CHARACTER_SIDE
+			);
+		}
+		
+		for (Sprite gem : this.gems) {
+			gem.render(this.graphicsContext);
+		}
+		
 		this.mainCharacter.render(graphicsContext);
 		this.weapon.render(graphicsContext);
 		
@@ -464,6 +493,7 @@ public class GameTimer extends AnimationTimer {
 		this.examCount = new LongValue(0);
 		this.clockSpawnTimer.activateCooldown(60000);
 		this.examSpawnTimer.activateCooldown(90000);
+		this.harderTimer.activateCooldown(60000);
 		this.start();
 	}
 	
@@ -485,6 +515,11 @@ public class GameTimer extends AnimationTimer {
 		if (!this.examSpawnTimer.isActiveCooldown()) {
 			this.spawnExams((int) ++this.examCount.value);
 			this.examSpawnTimer.activateCooldown(90000);
+		}
+		
+		if (!this.harderTimer.isActiveCooldown()) {
+			this.hardenEnemies();
+			this.harderTimer.activateCooldown(60000);
 		}
 		
 		this.updateEntities(currentNanoTime, this.lastNanoTime);

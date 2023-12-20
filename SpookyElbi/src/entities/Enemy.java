@@ -14,8 +14,10 @@ import java.util.ArrayList;
 import sprite.Sprite;
 
 public class Enemy extends Sprite {
-	public final static double SPEED_INCREASE = 0.1;
+	public static double speedFactor = 1.25;
+	public static double healthFactor = 1.25;
 	
+	protected int drops;
 	private double health;
 	private double speedX;
 	private double speedY;
@@ -75,9 +77,10 @@ public class Enemy extends Sprite {
 		return this.health <= 0;
 	}
 	
-	public void speedUp(double time) {
-		this.speedX += SPEED_INCREASE * time * 0;
-		this.speedY += SPEED_INCREASE * time * 0;
+	public void speedUp() {
+		this.health = Enemy.healthFactor * this.health;
+		this.speedX = Enemy.speedFactor * this.speedX;
+		this.speedY = Enemy.speedFactor * this.speedY;
 	}
 	
 	public double getDirectionX() {
@@ -98,5 +101,9 @@ public class Enemy extends Sprite {
 	
 	public void decreaseHealth(double dHealth) {
 		this.health -= dHealth;
+	}
+	
+	public double getDrops() {
+		return this.drops;
 	}
 }

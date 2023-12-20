@@ -9,12 +9,25 @@
 
 package entities;
 
+import application.GameTimer;
+import javafx.scene.image.Image;
 import sprite.Sprite;
 
 public class MainCharacter extends Sprite {
 	private int hearts = 3;
 	private boolean isMoving;
 	private int state;
+	public boolean isHit;
+	
+	public MainCharacter() {
+		((Sprite) this).setRedImage(new Image("characterimages\\yellowboy.png", GameTimer.CHARACTER_SIDE, GameTimer.CHARACTER_SIDE, true, true));
+		this.isHit = false;
+	}
+	
+	public void getHit() {
+		this.isHit = true;
+		super.getHit();
+	}
 	
 	public boolean getIsMoving() {
 		return isMoving;

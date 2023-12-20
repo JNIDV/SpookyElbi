@@ -13,6 +13,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import application.GameTimer;
+import entities.MainCharacter;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.GraphicsContext;
@@ -30,7 +31,6 @@ public class Sprite {
 	protected double velocityY = 0;
 	protected double width;
 	protected double height;
-	protected int state;
 	
 	public void setImage(Image image) {
 		this.image = image;
@@ -60,7 +60,7 @@ public class Sprite {
 	}
 	
 	public void rotateImage(double degrees) {
-		ImageView imageView = new ImageView(this.image);
+		ImageView imageView = new ImageView(this.baseImage);
 		imageView.setRotate(degrees);
 		
 		SnapshotParameters params = new SnapshotParameters();
@@ -107,30 +107,26 @@ public class Sprite {
 	}
 	
 	public Rectangle2D getBoundary() {
-		return new Rectangle2D(
-			this.positionX,
-			this.positionY,
-			this.width,
-			this.height
-		);
+		return new Rectangle2D(this.positionX, this.positionY, this.width, this.height);
 	}
 	
 	public boolean intersects(Sprite sprite) {
 		return sprite.getBoundary().intersects(this.getBoundary());
 	}
 	
-	public String toString() {
-		return " Position: [" + this.positionX + ", " + this.positionY + "]" + " Velocity: [" + this.velocityX + ", " + this.velocityY + "]";
-	}
-	
 	public void getHit() {
 		this.image = this.redImage;
+		Sprite self = this;
 		
 		new Timer().schedule(
         	new TimerTask() {
         		@Override
         		public void run() {
         			image = baseImage;
+        			
+        			if (self instanceof MainCharacter) {
+        				((MainCharacter) self).isHit = false;
+        			}
         			cancel();
         		}
         	}, 

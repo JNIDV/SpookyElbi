@@ -15,8 +15,6 @@ import sprite.Sprite;
 import entities.Enemy;
 
 public class Bullet extends Sprite {
-	public final static double MAX_DISTANCE = 500;
-	
 	private double damage;
 	private double startingX;
 	private double startingY;
@@ -35,8 +33,8 @@ public class Bullet extends Sprite {
 	}
 	
 	public void setDirection(double x, double y, Weapon weapon) {
-		double dx = x - ((Sprite) weapon).getPositionX();
-		double dy = y - ((Sprite) weapon).getPositionY();
+		double dx = x - weapon.getPositionX();
+		double dy = y - weapon.getPositionY();
 		double norm = Math.sqrt(dx * dx + dy * dy);
 		
 		if (norm == 0) {
@@ -53,7 +51,8 @@ public class Bullet extends Sprite {
 			angle += 360;
 		}
 		
-		((Sprite) this).rotateImage(angle);
+		this.rotateImage(angle);
+		weapon.rotateImage(angle);
 	}
 	
 	public boolean checkEnemiesCollision(ArrayList<Sprite> enemies) {
@@ -98,9 +97,8 @@ public class Bullet extends Sprite {
 	}
 	
 	public boolean reachedMaxRange() {
-		Sprite selfReference = this;
-		double dx = selfReference.getPositionX() - this.startingX;
-		double dy = selfReference.getPositionY() - this.startingY;
+		double dx = this.getPositionX() - this.startingX;
+		double dy = this.getPositionY() - this.startingY;
 		double distance = Math.sqrt(dx * dx + dy * dy);
 		return distance >= this.maxDistance;
 	}

@@ -13,5 +13,6 @@ public class Exam extends Enemy {
 		super(EXAM_HEALTH, EXAM_SPEED, EXAM_SPEED);
 		((Sprite) this).setImage(EXAM_IMAGE, 50, 50);
 		((Sprite) this).setRedImage(EXAM_RED_IMAGE);
+		this.drops = 5;
 	}
 }
