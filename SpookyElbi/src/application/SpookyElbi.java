@@ -16,24 +16,30 @@ import javafx.geometry.Pos;
 //import javafx.scene.Group;
 //import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
+//import javafx.scene.canvas.Canvas;
 //import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 //import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 //import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 //import javafx.scene.paint.Color;
 //import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import weapons.Paper;
+import weapons.Pen;
+import weapons.Pistol;
+import weapons.Shotgun;
 
 public class SpookyElbi extends Application {
-    private Scene scene1;
-    private Scene scene2;
-    private Scene scene3;
-    private Scene scene4;
+    private Scene menuScene;
+    private Scene settingsScene;
+    private Scene aboutGameScene;
+    private Scene weaponSelectScene;
+//    private Scene scene4;
 
     @Override
     public void start(Stage primaryStage) {
@@ -41,10 +47,9 @@ public class SpookyElbi extends Application {
     	GameStage gameStage = new GameStage(primaryStage);
     	
         // Main Menu [Title]
-        StackPane layout1 = new StackPane();
+        StackPane menuLayout = new StackPane();
 
-        Canvas canvas = new Canvas(1200, 800);
-//        GraphicsContext gc = canvas.getGraphicsContext2D();
+//        Canvas canvas = new Canvas(1200, 800);
         Image bg = new Image("scenes\\Menu.png", 1200, 900, true, true);
         ImageView iv1 = new ImageView();
         iv1.setPreserveRatio(true);
@@ -54,52 +59,136 @@ public class SpookyElbi extends Application {
         buttonScreen.setAlignment(Pos.TOP_CENTER);
 
         buttonScreen.getChildren().addAll(
-        	clearButton(e -> gameStage.runSpookyElbi()),
-            clearButton(e -> primaryStage.setScene(scene2)),
-            clearButton(e -> primaryStage.setScene(scene3)),
+        	clearButton(e -> primaryStage.setScene(weaponSelectScene)),
+            clearButton(e -> primaryStage.setScene(settingsScene)),
+            clearButton(e -> primaryStage.setScene(aboutGameScene)),
             clearButton(e -> primaryStage.close())
         );
 
-        layout1.getChildren().addAll(
-            canvas, iv1, buttonScreen
+        menuLayout.getChildren().addAll(
+            iv1, buttonScreen
         );
         
-        scene1 = new Scene(layout1, 1200, 670);
+        menuScene = new Scene(menuLayout, 1200, 680);
+        
+        // Weapon Select
+        AnchorPane weaponSelectLayout = new AnchorPane();
+        
+        Button paperButton = new Button();
+        
+        // image ng button
+        Image paperImage = new Image("images\\paper.png", 50, 50, true, true);
+        ImageView paperImageView = new ImageView(paperImage);
+        paperImageView.setFitWidth(50);
+        paperImageView.setFitHeight(50);
+        paperButton.setGraphic(paperImageView);
+        
+        // set position
+        AnchorPane.setLeftAnchor(paperButton, (double) 50);
+        AnchorPane.setTopAnchor(paperButton, (double) 200);
+        
+        // action ng button
+        paperButton.setOnAction(
+        	e -> {
+        		gameStage.setWeapon(new Paper());
+        	}
+        );
+        
+        Button penButton = new Button();
+        Image penImage = new Image("images\\pen.png", 50, 50, true, true);
+        ImageView penImageView = new ImageView(penImage);
+        penImageView.setFitWidth(50);
+        penImageView.setFitHeight(50);
+        penButton.setGraphic(penImageView);
+        AnchorPane.setLeftAnchor(penButton, (double) 150);
+        AnchorPane.setTopAnchor(penButton, (double) 200);
+        penButton.setOnAction(
+        	e -> {
+        		gameStage.setWeapon(new Pen());
+        	}
+        );
+        
+        Button pistolButton = new Button();
+        Image pistolImage = new Image("images\\pistol.png", 50, 50, true, true);
+        ImageView pistolImageView = new ImageView(pistolImage);
+        pistolImageView.setFitWidth(50);
+        pistolImageView.setFitHeight(50);
+        pistolButton.setGraphic(pistolImageView);
+        AnchorPane.setLeftAnchor(pistolButton, (double) 250);
+        AnchorPane.setTopAnchor(pistolButton, (double) 200);
+        pistolButton.setOnAction(
+        	e -> {
+        		gameStage.setWeapon(new Pistol());
+        	}
+        );
+        
+        Button shotgunButton = new Button();
+        Image shotgunImage = new Image("images\\shotgun.png", 50, 50, true, true);
+        ImageView shotgunImageView = new ImageView(shotgunImage);
+        shotgunImageView.setFitWidth(50);
+        shotgunImageView.setFitHeight(50);
+        shotgunButton.setGraphic(shotgunImageView);
+        AnchorPane.setLeftAnchor(shotgunButton, (double) 350);
+        AnchorPane.setTopAnchor(shotgunButton, (double) 200);
+        shotgunButton.setOnAction(
+        	e -> {
+        		gameStage.setWeapon(new Shotgun());
+        	}
+        );
+        
+        Button playButton = new Button();
+        AnchorPane.setRightAnchor(playButton, (double) 50);
+        AnchorPane.setBottomAnchor(playButton, (double) 50);
+        playButton.setOnAction(
+    		e -> {
+    			gameStage.runSpookyElbi();
+    		}
+		);
+        
+        weaponSelectLayout.getChildren().addAll(
+        	paperButton,
+        	penButton,
+        	pistolButton,
+        	shotgunButton,
+        	playButton
+        );
+        
+        weaponSelectScene = new Scene(weaponSelectLayout, 1200, 680);
 
         // Settings
-        StackPane layout2 = new StackPane();
+        StackPane settingsLayout = new StackPane();
 
-        VBox returnScreen2 = returnScreen(e -> primaryStage.setScene(scene1));;
+        VBox returnScreen2 = returnScreen(e -> primaryStage.setScene(menuScene));;
         Image bg2 = createimg("scenes\\settings.png");
         ImageView iv2 = new ImageView();
         iv2.setPreserveRatio(true);
         iv2.setImage(bg2);
 
-        layout2.getChildren().addAll(
+        settingsLayout.getChildren().addAll(
         	iv2, returnScreen2
         );
 
-        scene2 = new Scene(layout2, 1200, 680);
+        settingsScene = new Scene(settingsLayout, 1200, 680);
 
         // About Game
-        StackPane layout3 = new StackPane();
+        StackPane aboutGameLayout = new StackPane();
 
-        VBox returnScreen3 = returnScreen(e -> primaryStage.setScene(scene1));
+        VBox returnScreen3 = returnScreen(e -> primaryStage.setScene(menuScene));
         Image bg3 = createimg("scenes\\settings.png");
         ImageView iv3 = new ImageView();
         iv3.setPreserveRatio(true);
         iv3.setImage(bg3);
 
-        layout3.getChildren().addAll(
+        aboutGameLayout.getChildren().addAll(
         	iv3, returnScreen3
         );
 
-        scene3 = new Scene(layout3, 1200, 680);
+        aboutGameScene = new Scene(aboutGameLayout, 1200, 680);
 
         // Exit
 //        StackPane layout4 = new StackPane();
 //
-//        VBox returnScreen4 = returnScreen(e -> primaryStage.setScene(scene1));
+//        VBox returnScreen4 = returnScreen(e -> primaryStage.setScene(menuScene));
 //        Image bg4 = createimg("scenes\\settings.png");
 //        ImageView iv4 = new ImageView();
 //        iv4.setPreserveRatio(true);
@@ -111,7 +200,7 @@ public class SpookyElbi extends Application {
 //
 //        scene4 = new Scene(layout4, 1200, 680);
 
-        primaryStage.setScene(scene1);
+        primaryStage.setScene(menuScene);
         primaryStage.setTitle("Spooky Elbi");
         primaryStage.show();
     }
@@ -119,7 +208,7 @@ public class SpookyElbi extends Application {
 	private Button clearButton(EventHandler<ActionEvent> handler) {
         Button button = new Button();
         button.setPrefWidth(400);
-        button.setPrefHeight(60);
+        button.setPrefHeight(65);
         button.setStyle("-fx-opacity: 0;");
         button.setOnAction(handler);
         return button;
@@ -132,7 +221,7 @@ public class SpookyElbi extends Application {
     }
 
 	private Image createimg(String filename){
-		Image pic = new Image(filename, 1200, 900, true, true);
+		Image pic = new Image(filename, 1200, 800, true, true);
 		return pic;
 	}
 

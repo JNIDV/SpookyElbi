@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import sprite.Sprite;
 
 public class Enemy extends Sprite {
-	public final static double SPEED_INCREASE = 5;
+	public final static double SPEED_INCREASE = 0.1;
 	
 	private double health;
 	private double directionX;
@@ -22,10 +22,10 @@ public class Enemy extends Sprite {
 	private double speedX;
 	private double speedY;
 	
-	public Enemy() {
-		this.health = 40;
-		this.speedX = 50;
-		this.speedY = 50;
+	public Enemy(double health, double speedX, double speedY) {
+		this.health = health;
+		this.speedX = speedX;
+		this.speedY = speedY;
 	}
 	
 	public void updateDirection(Sprite mainCharacter, ArrayList<Sprite> enemies) {
@@ -73,17 +73,13 @@ public class Enemy extends Sprite {
 		}
 	}
 	
-	public void turnRed() {
-		
-	}
-	
 	public boolean isDead() {
 		return this.health <= 0;
 	}
 	
 	public void speedUp(double time) {
-		this.speedX += time;
-		this.speedY += time;
+		this.speedX += SPEED_INCREASE * time;
+		this.speedY += SPEED_INCREASE * time;
 	}
 	
 	public double getDirectionX() {

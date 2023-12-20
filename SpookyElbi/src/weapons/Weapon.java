@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import sprite.Sprite;
 
 public class Weapon extends Sprite {
-	public static final int AMMO_COUNT = 6;
-	
+	private String bulletImage;
+	private int ammoCount;
 	private long weaponDelay;
 	private long reloadDelay;
 	private double damage;
-	private ArrayList<Sprite> bullets;
+	protected ArrayList<Sprite> bullets;
 	public ArrayList<Sprite> shotBullets;
 	
 	public Weapon(long weaponDelay, long reloadDelay, double damage) {
@@ -28,6 +28,14 @@ public class Weapon extends Sprite {
 		this.bullets = new ArrayList<Sprite>();
 		this.shotBullets = new ArrayList<Sprite>();
 		this.reload();
+	}
+	
+	public void setBulletImage(String bulletImage) {
+		this.bulletImage = bulletImage;
+	}
+	
+	public void setAmmoCount(int ammoCount) {
+		this.ammoCount = ammoCount;
 	}
 	
 	public void shoot(double x, double y) {
@@ -46,10 +54,10 @@ public class Weapon extends Sprite {
 	}
 	
 	public void reload() {
-		while (this.bullets.size() < Weapon.AMMO_COUNT) {
+		while (this.bullets.size() < this.ammoCount) {
 			Sprite bullet = new Bullet();
 			this.bullets.add(bullet);
-			bullet.setImage("images\\pen.png", 10, 10);
+			bullet.setImage(this.bulletImage, 10, 10);
 			((Bullet) bullet).setDamage(this.damage);
 		}
 		

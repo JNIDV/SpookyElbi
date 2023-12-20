@@ -15,18 +15,23 @@ import sprite.Sprite;
 import entities.Enemy;
 
 public class Bullet extends Sprite {
-	public final static double BULLET_SPEED = 150;
-	public final static double MAX_DISTANCE = 300;
+	public final static double BULLET_SPEED = 300;
+	public final static double MAX_DISTANCE = 500;
 	
 	private double damage;
 	private double startingX;
 	private double startingY;
 	private double directionX;
 	private double directionY;
+	private int hitCount = 0;
 	
 	public void setStarting(double x, double y) {
 		this.startingX = x;
 		this.startingY = y;
+	}
+	
+	public int getHitCount() {
+		return this.hitCount;
 	}
 	
 	public void setDirection(double x, double y, Weapon weapon) {
@@ -42,7 +47,13 @@ public class Bullet extends Sprite {
 		
 		this.directionX = dx / norm;
 		this.directionY = dy / norm;
-		((Sprite) this).rotateImage(180 * Math.atan(this.directionY / this.directionX) / Math.PI);
+		double angle = Math.toDegrees(Math.atan2(this.directionY, this.directionX));
+		
+		if (angle < 0) {
+			angle += 360;
+		}
+		
+		((Sprite) this).rotateImage(angle);
 	}
 	
 	public boolean checkEnemiesCollision(ArrayList<Sprite> enemies) {
@@ -50,9 +61,10 @@ public class Bullet extends Sprite {
 		
 		for (Sprite enemy : enemies) {
 			if (enemy.intersects(this)) {
+				this.hitCount++;
 				collided = true;
 				((Enemy) enemy).decreaseHealth(this.damage);
-				((Enemy) enemy).turnRed();
+				enemy.getHit();
 				break;
 			}
 		}

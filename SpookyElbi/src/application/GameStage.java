@@ -27,24 +27,29 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.event.EventHandler;
-
+import entities.Clock;
 import entities.Enemy;
+import entities.Exam;
+import entities.Frog;
 import entities.MainCharacter;
 import weapons.Bullet;
+import weapons.Pen;
+import weapons.Shotgun;
 import weapons.Weapon;
 
 import sprite.Sprite;
 import utils.CooldownTimer;
 import wrappers.LongValue;
+import weapons.Paper;
 
 import java.util.Random;
 
 public class GameStage {
 	public static final long GAME_DURATION_NANO = 10 * 60 * 1_000_000_000L;
-	public static final int CANVAS_WIDTH = 2400;
-	public static final int CANVAS_HEIGHT = 2400;
+	public static final int CANVAS_WIDTH = 3600;
+	public static final int CANVAS_HEIGHT = 3600;
 	public static final int VIEWPORT_WIDTH = 1200;
-	public static final int VIEWPORT_HEIGHT = 800;
+	public static final int VIEWPORT_HEIGHT = 670;
 	public static final double WEAPON_OFFSET_X = 40;
 	public static final double WEAPON_OFFSET_Y = 30;
 	public static final double CHARACTER_VELOCITY = 100;
@@ -58,9 +63,8 @@ public class GameStage {
 	));
 	public static final Image HEART_IMAGE = new Image("images\\Heart.png", 30, 30, true, true);
 	public static final Image PEN_IMAGE   = new Image("images\\pen.png", 10, 10, true, true);
-	public static final Image MAP_IMAGE   = new Image("images\\roughMap.png", CANVAS_WIDTH, CANVAS_HEIGHT, true, true);
+	public static final Image MAP_IMAGE   = new Image("images\\Map2.png", CANVAS_WIDTH, CANVAS_HEIGHT, true, true);
 	
-	private Text timerText;
 	private Stage stage;
 	private StackPane root;
 	private ScrollPane scrollPane;
@@ -76,46 +80,53 @@ public class GameStage {
 	private CooldownTimer collisionTimer;
 	private CooldownTimer reloadTimer;
 	private CooldownTimer weaponTimer;
-	private CooldownTimer spawnTimer;
+	private CooldownTimer frogSpawnTimer;
+	private CooldownTimer clockSpawnTimer;
+	private CooldownTimer examSpawnTimer;
+	private Text timerText;
 	
 	public GameStage(Stage stage) {
-		this.timerText           = new Text();
-		this.stage               = stage;
-		this.entityCanvas        = new Canvas(GameStage.CANVAS_WIDTH, GameStage.CANVAS_HEIGHT);
-		this.scrollPane          = new ScrollPane(this.entityCanvas);
-		this.root                = new StackPane(this.scrollPane, this.timerText);
-		this.gameProperScene     = new Scene(this.root, GameStage.VIEWPORT_WIDTH, GameStage.VIEWPORT_HEIGHT);
-		this.random              = new Random();
-		this.graphicsContext     = this.entityCanvas.getGraphicsContext2D();
-		this.mainCharacter       = new MainCharacter();
-		this.weapon              = new Weapon(200, 3000, 20);
-		this.enemies             = new ArrayList<Sprite>();
-		this.input               = new ArrayList<String>();
-		this.gameOver            = false;
-		this.collisionTimer      = new CooldownTimer();
-		this.reloadTimer         = new CooldownTimer();
-		this.weaponTimer         = new CooldownTimer();
-		this.spawnTimer          = new CooldownTimer();
-	}
-	
-	public boolean isOver() {
-		return this.gameOver;
+		this.stage           = stage;
+		this.entityCanvas    = new Canvas(GameStage.CANVAS_WIDTH, GameStage.CANVAS_HEIGHT);
+		this.scrollPane      = new ScrollPane(this.entityCanvas);
+		this.timerText       = new Text();
+		this.root            = new StackPane(this.scrollPane, this.timerText);
+		this.gameProperScene = new Scene(this.root, GameStage.VIEWPORT_WIDTH, GameStage.VIEWPORT_HEIGHT);
+		this.random          = new Random();
+		this.graphicsContext = this.entityCanvas.getGraphicsContext2D();
+		this.mainCharacter   = new MainCharacter();
+		this.weapon          = new Pen();
+		this.enemies         = new ArrayList<Sprite>();
+		this.input           = new ArrayList<String>();
+		this.gameOver        = false;
+		this.collisionTimer  = new CooldownTimer();
+		this.reloadTimer     = new CooldownTimer();
+		this.weaponTimer     = new CooldownTimer();
+		this.frogSpawnTimer  = new CooldownTimer();
+		this.clockSpawnTimer = new CooldownTimer();
+		this.examSpawnTimer  = new CooldownTimer();
 	}
 	
 	public void runSpookyElbi() {
 		this.timerText.setFont(Font.font(30));
 		StackPane.setAlignment(timerText, javafx.geometry.Pos.TOP_RIGHT);
+		
+		this.setWeapon(new Paper());
+		
 		this.scrollPane.setPrefViewportWidth(GameStage.VIEWPORT_WIDTH);
 		this.scrollPane.setPrefViewportHeight(GameStage.VIEWPORT_HEIGHT);
 		this.scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
 		this.scrollPane.setVbarPolicy(ScrollBarPolicy.NEVER);
+		
 		this.setMainCharacter("images\\mainCharacter.png");
-		this.setWeapon("images\\pen.png");
+//		this.setWeapon("images\\pen.png");
 		this.handleKeyEvents();
 		this.handleMouseEvents();
+		
 		this.stage.setTitle("Spooky Elbi");
 		this.stage.setScene(this.gameProperScene);
 		this.stage.show();
+		
 		this.runAnimation();
 	}
 	
@@ -132,21 +143,40 @@ public class GameStage {
 		((Weapon) this.weapon).reload();
 	}
 	
-	public Sprite spawnEnemy(String imageFilename) {
-		Sprite newEnemy = new Enemy();
-		newEnemy.setImage(imageFilename, GameStage.ENEMY_SIDE, GameStage.ENEMY_SIDE);
-		
-		double startingX = this.random.nextDouble() * GameStage.CANVAS_WIDTH;
-		double startingY = this.random.nextDouble() * GameStage.CANVAS_HEIGHT;
-		
-		newEnemy.setPosition(startingX, startingY);
-		return newEnemy;
+	public void setWeapon(Weapon weapon) {
+		this.weapon = weapon;
+		this.weapon.setPosition(GameStage.CANVAS_WIDTH / 2 + 20, GameStage.CANVAS_HEIGHT);
+		((Sprite) this.weapon).rotateImage(-45);
+		((Weapon) this.weapon).reload();
 	}
 	
-	public void spawnEnemies(int enemyCount, String imageFilename) {
-		for (int i = 0; i < enemyCount; i++) {
-			Sprite newEnemy = this.spawnEnemy(imageFilename);
-			this.enemies.add(newEnemy);
+	public void spawnFrogs(int frogCount) {
+		for (int i = 0; i < frogCount; i++) {
+			Sprite newFrog = new Frog();
+			double startingX = this.random.nextDouble() * GameStage.CANVAS_WIDTH;
+			double startingY = this.random.nextDouble() * GameStage.CANVAS_HEIGHT;
+			newFrog.setPosition(startingX, startingY);
+			this.enemies.add(newFrog);
+		}
+	}
+	
+	public void spawnClocks(int clockCount) {
+		for (int i = 0; i < clockCount; i++) {
+			Sprite newClock = new Clock();
+			double startingX = this.random.nextDouble() * GameStage.CANVAS_WIDTH;
+			double startingY = this.random.nextDouble() * GameStage.CANVAS_HEIGHT;
+			newClock.setPosition(startingX, startingY);
+			this.enemies.add(newClock);
+		}
+	}
+	
+	public void spawnExams(int examCount) {
+		for (int i = 0; i < examCount; i++) {
+			Sprite newExam = new Exam();
+			double startingX = this.random.nextDouble() * GameStage.CANVAS_WIDTH;
+			double startingY = this.random.nextDouble() * GameStage.CANVAS_HEIGHT;
+			newExam.setPosition(startingX, startingY);
+			this.enemies.add(newExam);
 		}
 	}
 	
@@ -187,7 +217,7 @@ public class GameStage {
 			new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent mouseEvent) {
-					if (!weaponTimer.isActiveCooldown()) {
+					if (!weaponTimer.isActiveCooldown() && !reloadTimer.isActiveCooldown()) {
 						double x = mouseEvent.getSceneX();
 						double y = mouseEvent.getSceneY();
 						double targetX = x - GameStage.VIEWPORT_WIDTH / 2 - GameStage.WEAPON_OFFSET_X + weaponReference.getPositionX();
@@ -207,7 +237,7 @@ public class GameStage {
 		
 		if (this.input.contains("W") || this.input.contains("A") || this.input.contains("S") || this.input.contains("D")) {
 			((MainCharacter) this.mainCharacter).setIsMoving(true);
-			((MainCharacter) this.mainCharacter).setState((int) (currentNanoTime / 2e8) % 3);
+			((MainCharacter) this.mainCharacter).setState((int) (currentNanoTime / 1e8) % 3);
 		} else {
 			((MainCharacter) this.mainCharacter).setIsMoving(false);
 			((MainCharacter) this.mainCharacter).setState(0);
@@ -259,6 +289,7 @@ public class GameStage {
 			
 			if (!this.collisionTimer.isActiveCooldown() && this.mainCharacter.intersects(enemy)) {
 			    ((MainCharacter) this.mainCharacter).decreaseHeart();
+			    ((Sprite) this.mainCharacter).getHit();
 			    this.collisionTimer.activateCooldown(1000);
 			}
 			
@@ -284,8 +315,16 @@ public class GameStage {
 			bullet.setVelocity(velocityX, velocityY);
 			bulletE.update(elapsedTime);
 			
-			if (bulletE.checkEnemiesCollision(this.enemies) || bulletE.reachedMaxRange()) {
+			if (bulletE.reachedMaxRange()) {
 				bulletIterator.remove();
+			} else if (bulletE.checkEnemiesCollision(this.enemies)) {
+				if (this.weapon instanceof Shotgun) {
+					if (bulletE.getHitCount() >= 2) {
+						bulletIterator.remove();
+					}
+				} else {
+					bulletIterator.remove();
+				}
 			}
 		}
 	}
@@ -328,8 +367,8 @@ public class GameStage {
 	}
 	
 	public void updateArea() {
-		double viewportX = Math.max(0, this.mainCharacter.getPositionX() - (GameStage.VIEWPORT_WIDTH / 2));
-        double viewportY = Math.max(0, this.mainCharacter.getPositionY() - (GameStage.VIEWPORT_HEIGHT / 2));
+		double viewportX = this.mainCharacter.getPositionX() - (GameStage.VIEWPORT_WIDTH / 2);
+        double viewportY = this.mainCharacter.getPositionY() - (GameStage.VIEWPORT_HEIGHT / 2);
         this.scrollPane.setHvalue(viewportX / (GameStage.CANVAS_WIDTH - GameStage.VIEWPORT_WIDTH));
         this.scrollPane.setVvalue(viewportY / (GameStage.CANVAS_HEIGHT - GameStage.VIEWPORT_HEIGHT));
 	}
@@ -347,8 +386,8 @@ public class GameStage {
 		if (!this.reloadTimer.isActiveCooldown()) {
 			this.graphicsContext.strokeText(
 				"Reload ready!", 
-				this.mainCharacter.getPositionX() - (GameStage.VIEWPORT_WIDTH / 2) + 100, 
-				this.mainCharacter.getPositionY() + (GameStage.VIEWPORT_HEIGHT / 2) - 20
+				this.mainCharacter.getPositionX() - (GameStage.VIEWPORT_WIDTH / 2) + 10, 
+				this.mainCharacter.getPositionY() + (GameStage.VIEWPORT_HEIGHT / 2) - 50
 			);
 		}
 		
@@ -361,19 +400,21 @@ public class GameStage {
 	}
 	
 	public void runAnimation() {
-		GameStage selfReference = this;
 		LongValue startNanoTime = new LongValue(System.nanoTime());
 		LongValue lastNanoTime = new LongValue(startNanoTime.value);
+		LongValue frogCount = new LongValue(5);
+		LongValue clockCount = new LongValue(1);
+		LongValue examCount = new LongValue(0);
+		clockSpawnTimer.activateCooldown(60000);
+		examSpawnTimer.activateCooldown(90000);
 		
 		new AnimationTimer() {
 			@Override
 			public void handle(long currentNanoTime) {
 				long remainingTime = (GAME_DURATION_NANO - (currentNanoTime - startNanoTime.value)) / 1_000_000_000L;
-//				System.out.println("Current nano time: " + currentNanoTime);
-				selfReference.updateEntities(currentNanoTime, lastNanoTime);
-				selfReference.updateArea();
-				selfReference.renderEntities();
-//				System.out.println("Hearts: " + ((MainCharacter) selfReference.mainCharacter).getHearts());
+				updateEntities(currentNanoTime, lastNanoTime);
+				updateArea();
+				renderEntities();
 				
 				if (remainingTime <= 0) {
 					remainingTime = 0;
@@ -382,15 +423,24 @@ public class GameStage {
 				
 				timerText.setText("Time Remaining: " + remainingTime / 60 + " : " + remainingTime % 60 + " ");
 				
-				if (selfReference.gameOver) {
+				if (gameOver) {
 					this.stop();
 				}
 				
-				if (!spawnTimer.isActiveCooldown()) {
-					spawnEnemies(10, "images\\Frog.png");
-					spawnTimer.activateCooldown(30000);
-				}				
-//				System.out.println("Main character position: " + selfReference.mainCharacter.getPositionX() + " " + selfReference.mainCharacter.getPositionY());
+				if (!frogSpawnTimer.isActiveCooldown()) {
+					spawnFrogs((int) ++frogCount.value);
+					frogSpawnTimer.activateCooldown(30000);
+				}
+				
+				if (!clockSpawnTimer.isActiveCooldown()) {
+					spawnClocks((int) ++clockCount.value);
+					clockSpawnTimer.activateCooldown(60000);
+				}
+				
+				if (!examSpawnTimer.isActiveCooldown()) {
+					spawnExams((int) ++examCount.value);
+					examSpawnTimer.activateCooldown(90000);
+				}
 			}
 		}.start();
 	}

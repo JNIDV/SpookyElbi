@@ -10,6 +10,8 @@
 package sprite;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import application.GameStage;
 import javafx.geometry.Rectangle2D;
@@ -20,17 +22,31 @@ import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 
 public class Sprite {
+	protected Image baseImage;
+	protected Image redImage;
 	protected Image image;
 	protected double positionX;
 	protected double positionY;
-	protected double velocityX;
-	protected double velocityY;
+	protected double velocityX = 0;
+	protected double velocityY = 0;
 	protected double width;
 	protected double height;
 	protected int state;
 	
 	public void setImage(Image image) {
 		this.image = image;
+		this.baseImage = image;
+	}
+	
+	public void setImage(Image image, double width, double height) {
+		this.image = image;
+		this.baseImage = image;
+		this.width = width;
+		this.height = height;
+	}
+	
+	public void setRedImage(Image redImage) {
+		this.redImage = redImage;
 	}
 	
 	public void setSizes(double width, double height) {
@@ -124,6 +140,21 @@ public class Sprite {
 	
 	public String toString() {
 		return " Position: [" + this.positionX + ", " + this.positionY + "]" + " Velocity: [" + this.velocityX + ", " + this.velocityY + "]";
+	}
+	
+	public void getHit() {
+		this.image = this.redImage;
+		
+		new Timer().schedule(
+        	new TimerTask() {
+        		@Override
+        		public void run() {
+        			image = baseImage;
+        			cancel();
+        		}
+        	}, 
+        	500
+		);
 	}
 	
 	// Setters and getters

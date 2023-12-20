@@ -37,7 +37,7 @@ public class CooldownTimer {
     		);
         }
     }
-
+    
     public boolean isActiveCooldown() {
         return this.isActiveCooldown;
     }
