@@ -29,7 +29,6 @@ public class CooldownTimer {
             		@Override
             		public void run() {
             			isActiveCooldown = false;
-            			System.out.println("Hello!");
             			cancel();
             		}
             	}, 

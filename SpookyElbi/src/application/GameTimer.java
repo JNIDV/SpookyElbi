@@ -18,15 +18,20 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import entities.Clock;
 import entities.Enemy;
 import entities.Exam;
@@ -48,7 +53,9 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
 public class GameTimer extends AnimationTimer {
-	public static final long GAME_DURATION_NANO = 10 * 60 * 1_000_000_000L;
+	public static final long GAME_DURATION_MINUTES = 1;
+	public static final long GAME_DURATION_SECONDS = 5;
+	public static final long GAME_DURATION_NANO = GAME_DURATION_MINUTES * GAME_DURATION_SECONDS * 1_000_000_000L;
 	public static final int CANVAS_WIDTH = 3900;
 	public static final int CANVAS_HEIGHT = 3600;
 	public static final int VIEWPORT_WIDTH = 1080;
@@ -75,6 +82,8 @@ public class GameTimer extends AnimationTimer {
 		"maze.mp3",
 		"underclocked.mp3"
 	));
+	
+	private SpookyElbi spookyElbi;
 	
 	private Stage stage;
 	private StackPane root;
@@ -105,15 +114,18 @@ public class GameTimer extends AnimationTimer {
 	private LongValue clockCount;
 	private LongValue examCount;
 	
-	private int gemCount;
+	private long gemCount;
+	private long gemsCollected;
+	private long secondsSurvived;
 	private boolean gameOver;
 	private Text timerText;
 	
 	private MediaPlayer musicPlayer;
 	private int currentMusicIndex;
 	
-	public GameTimer(Stage stage) {
+	public GameTimer(Stage stage, SpookyElbi spookyElbi) {
 		super();
+		this.spookyElbi      = spookyElbi;
 		this.stage           = stage;
 		this.entityCanvas    = new Canvas(GameTimer.CANVAS_WIDTH, GameTimer.CANVAS_HEIGHT);
 		this.scrollPane      = new ScrollPane(this.entityCanvas);
@@ -136,6 +148,8 @@ public class GameTimer extends AnimationTimer {
 		this.examSpawnTimer  = new CooldownTimer();
 		this.harderTimer     = new CooldownTimer();
 		this.gemCount        = 0;
+		this.gemsCollected   = 0;
+		this.secondsSurvived = 0;
 	}
 	
 	public void runSpookyElbi() {
@@ -323,7 +337,7 @@ public class GameTimer extends AnimationTimer {
 			if (enemy.isDead()) {
 				for (int i = 0; i < enemy.getDrops(); i++) {
 					double randomOffset = this.random.nextInt(10);
-					Sprite gem = new Gem(((Sprite) enemy).getPositionX() + randomOffset, ((Sprite) enemy).getPositionY() + randomOffset);
+					Sprite gem = new Gem(enemy.getPositionX() + randomOffset, enemy.getPositionY() + randomOffset);
 					this.gems.add(gem);
 				}
 				
@@ -340,7 +354,7 @@ public class GameTimer extends AnimationTimer {
 			Sprite gem = gemIterator.next();
 			
 			if (this.mainCharacter.intersects(gem)) {
-				this.gemCount++;
+				this.gemsCollected++;
 				((Gem) gem).playSound();
 				gemIterator.remove();
 			}
@@ -360,7 +374,7 @@ public class GameTimer extends AnimationTimer {
 			
 			if (!this.collisionTimer.isActiveCooldown() && this.mainCharacter.intersects(enemy)) {
 			    ((MainCharacter) this.mainCharacter).decreaseHeart();
-			    ((Sprite) this.mainCharacter).getHit();
+			    this.mainCharacter.getHit();
 			    this.collisionTimer.activateCooldown(2000);
 			}
 			
@@ -377,20 +391,19 @@ public class GameTimer extends AnimationTimer {
 		Iterator<Sprite> bulletIterator = ((Weapon) this.weapon).shotBullets.iterator();
 		
 		while (bulletIterator.hasNext()) {
-			Sprite bullet = bulletIterator.next();
-			Bullet bulletE = (Bullet) bullet;
+			Bullet bullet = (Bullet) bulletIterator.next();
 			
-			double velocityX = bulletE.getDirectionX() * ((Weapon) this.weapon).getBulletSpeed();
-			double velocityY = bulletE.getDirectionY() * ((Weapon) this.weapon).getBulletSpeed();
+			double velocityX = bullet.getDirectionX() * ((Weapon) this.weapon).getBulletSpeed();
+			double velocityY = bullet.getDirectionY() * ((Weapon) this.weapon).getBulletSpeed();
 			
 			bullet.setVelocity(velocityX, velocityY);
-			bulletE.update(elapsedTime);
+			bullet.update(elapsedTime);
 			
-			if (bulletE.reachedMaxRange()) {
+			if (bullet.reachedMaxRange()) {
 				bulletIterator.remove();
-			} else if (bulletE.checkEnemiesCollision(this.enemies)) {
+			} else if (bullet.checkEnemiesCollision(this.enemies)) {
 				if (this.weapon instanceof Shotgun) {
-					if (bulletE.getHitCount() >= 2) {
+					if (bullet.getHitCount() >= 2) {
 						bulletIterator.remove();
 					}
 				} else {
@@ -536,9 +549,44 @@ public class GameTimer extends AnimationTimer {
 		}
 		
 		if (this.gameOver) {
-			this.gemCount += (currentNanoTime - this.startNanoTime.value) / 1_000_000_000L;
+			this.secondsSurvived = (currentNanoTime - this.startNanoTime.value) / 1_000_000_000L;
+			this.gemCount = this.gemsCollected + this.secondsSurvived;
 			System.out.println("Gem count: " + this.gemCount);
+			this.displayGameOver();
+			this.musicPlayer.stop();
 			this.stop();
 		}
+	}
+	
+	private void displayGameOver() {
+		AnchorPane gameOverLayout = new AnchorPane();
+		
+		Image gameOverImage = new Image("scenes\\gameover.png", 900, 600, true, true);
+		ImageView gameOverImageView = new ImageView(gameOverImage);
+		gameOverImageView.setPreserveRatio(true);
+		
+		Button exit = this.spookyElbi.clearButton(e -> this.stage.setScene(this.spookyElbi.getMenuScene()), 105, 60);
+		
+		Text gemsCollected = new Text("Gems collected: " + this.gemsCollected);
+		Text minutesSurvived = new Text("Minutes survived: " + this.secondsSurvived);
+		Text totalGemsEarned = new Text("Total gems earned: " + this.gemCount);
+        gemsCollected.setFont(Font.font("Arial", 40));
+        minutesSurvived.setFont(Font.font("Arial", 40));
+        totalGemsEarned.setFont(Font.font("Arial", 40));
+        VBox resultsV = new VBox(30);
+        resultsV.setAlignment(Pos.TOP_CENTER);
+        resultsV.getChildren().addAll(gemsCollected, minutesSurvived, totalGemsEarned);
+        
+		AnchorPane.setTopAnchor(gameOverImageView, (GameTimer.VIEWPORT_HEIGHT - gameOverImage.getHeight()) / 2);
+        AnchorPane.setLeftAnchor(gameOverImageView, (GameTimer.VIEWPORT_WIDTH - gameOverImage.getWidth()) / 2);
+        
+        AnchorPane.setTopAnchor(exit, 220.0);
+        AnchorPane.setRightAnchor(exit, (GameTimer.VIEWPORT_WIDTH - gameOverImage.getWidth()) / 2 + 85);
+        
+        AnchorPane.setTopAnchor(resultsV, 300.0);
+        AnchorPane.setLeftAnchor(resultsV, (GameTimer.VIEWPORT_WIDTH - totalGemsEarned.getLayoutBounds().getWidth()) / 2);
+             
+        gameOverLayout.getChildren().addAll(gameOverImageView, exit, resultsV);
+        this.root.getChildren().addAll(gameOverLayout);        
 	}
 }

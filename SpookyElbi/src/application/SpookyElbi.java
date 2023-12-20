@@ -35,8 +35,6 @@ public class SpookyElbi extends Application {
     @Override
     public void start(Stage primaryStage) {
     	primaryStage.setTitle("Spooki ELBI");
-    	GameTimer gameTimer = new GameTimer(primaryStage);
-    	gameTimer.setWeapon(new Paper());
     	
         // Main Menu [Title]
         StackPane menuLayout = new StackPane();
@@ -50,10 +48,13 @@ public class SpookyElbi extends Application {
         buttonScreen.setAlignment(Pos.TOP_CENTER);
 
         buttonScreen.getChildren().addAll(
-        	clearButton(e -> primaryStage.setScene(weaponSelectScene)),
-            clearButton(e -> primaryStage.setScene(settingsScene)),
-            clearButton(e -> primaryStage.setScene(aboutGameScene)),
-            clearButton(e -> primaryStage.close())
+        	clearButton(e -> {
+        		this.createNewGame(primaryStage);
+        		primaryStage.setScene(weaponSelectScene);
+    		}, 400, 50),        
+            clearButton(e -> primaryStage.setScene(settingsScene), 400, 50),
+            clearButton(e -> primaryStage.setScene(aboutGameScene), 400, 50),
+            clearButton(e -> primaryStage.close(), 400, 50)
         );
 
         menuLayout.getChildren().addAll(
@@ -61,8 +62,75 @@ public class SpookyElbi extends Application {
         );
         
         menuScene = new Scene(menuLayout, 1200, 680);
-        
-        // Weapon Select
+
+        // Settings
+        StackPane settingsLayout = new StackPane();
+
+        VBox returnScreen2 = returnScreen(e -> primaryStage.setScene(menuScene));;
+        Image bg2 = createimg("scenes\\settings.png");
+        ImageView iv2 = new ImageView();
+        iv2.setPreserveRatio(true);
+        iv2.setImage(bg2);
+
+        settingsLayout.getChildren().addAll(
+        	iv2, returnScreen2
+        );
+
+        settingsScene = new Scene(settingsLayout, 1200, 680);
+
+        // About Game
+        StackPane aboutGameLayout = new StackPane();
+
+        VBox returnScreen3 = returnScreen(e -> primaryStage.setScene(menuScene));
+        Image bg3 = createimg("scenes\\settings.png");
+        ImageView iv3 = new ImageView();
+        iv3.setPreserveRatio(true);
+        iv3.setImage(bg3);
+
+        aboutGameLayout.getChildren().addAll(
+        	iv3, returnScreen3
+        );
+
+        aboutGameScene = new Scene(aboutGameLayout, 1200, 680);
+
+        primaryStage.setScene(menuScene);
+        primaryStage.setTitle("Spooky Elbi");
+        primaryStage.show();
+    }
+
+	public Button clearButton(EventHandler<ActionEvent> handler, double width, double height) {
+        Button button = new Button();
+        button.setPrefWidth(width);
+        button.setPrefHeight(height);
+        button.setStyle("-fx-opacity: 25;");
+        button.setOnAction(handler);
+        return button;
+    }
+
+	private VBox returnScreen(EventHandler<ActionEvent> handler) {
+        VBox returnScreen = new VBox(18);
+        returnScreen.getChildren().addAll(clearButton(handler, 50, 50));
+        return returnScreen;
+    }
+
+	private Image createimg(String filename){
+		Image pic = new Image(filename, 1200, 800, true, true);
+		return pic;
+	}
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+    
+    public Scene getMenuScene() {
+    	return this.menuScene;
+    }
+    
+    private void createNewGame(Stage primaryStage) {
+    	GameTimer gameTimer = new GameTimer(primaryStage, this);
+    	gameTimer.setWeapon(new Paper());
+    	
+    	// Weapon Select
         AnchorPane weaponSelectLayout = new AnchorPane();
         
         Button paperButton = new Button();
@@ -139,63 +207,5 @@ public class SpookyElbi extends Application {
         );
         
         weaponSelectScene = new Scene(weaponSelectLayout, 1200, 680);
-
-        // Settings
-        StackPane settingsLayout = new StackPane();
-
-        VBox returnScreen2 = returnScreen(e -> primaryStage.setScene(menuScene));;
-        Image bg2 = createimg("scenes\\settings.png");
-        ImageView iv2 = new ImageView();
-        iv2.setPreserveRatio(true);
-        iv2.setImage(bg2);
-
-        settingsLayout.getChildren().addAll(
-        	iv2, returnScreen2
-        );
-
-        settingsScene = new Scene(settingsLayout, 1200, 680);
-
-        // About Game
-        StackPane aboutGameLayout = new StackPane();
-
-        VBox returnScreen3 = returnScreen(e -> primaryStage.setScene(menuScene));
-        Image bg3 = createimg("scenes\\settings.png");
-        ImageView iv3 = new ImageView();
-        iv3.setPreserveRatio(true);
-        iv3.setImage(bg3);
-
-        aboutGameLayout.getChildren().addAll(
-        	iv3, returnScreen3
-        );
-
-        aboutGameScene = new Scene(aboutGameLayout, 1200, 680);
-
-        primaryStage.setScene(menuScene);
-        primaryStage.setTitle("Spooky Elbi");
-        primaryStage.show();
-    }
-
-	private Button clearButton(EventHandler<ActionEvent> handler) {
-        Button button = new Button();
-        button.setPrefWidth(400);
-        button.setPrefHeight(65);
-        button.setStyle("-fx-opacity: 0;");
-        button.setOnAction(handler);
-        return button;
-    }
-
-	private VBox returnScreen(EventHandler<ActionEvent> handler) {
-        VBox returnScreen = new VBox(18);
-        returnScreen.getChildren().addAll(clearButton(handler));
-        return returnScreen;
-    }
-
-	private Image createimg(String filename){
-		Image pic = new Image(filename, 1200, 800, true, true);
-		return pic;
-	}
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }
