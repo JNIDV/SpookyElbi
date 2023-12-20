@@ -9,11 +9,10 @@
 
 package sprite;
 
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import application.GameStage;
+import application.GameTimer;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.GraphicsContext;
@@ -56,8 +55,8 @@ public class Sprite {
 	
 	public void setImage(String filename, double width, double height) {
 		Image image = new Image(filename, width, height, true, true);
-		setImage(image);
-		setSizes(width, height);
+		this.setImage(image);
+		this.setSizes(width, height);
 	}
 	
 	public void rotateImage(double degrees) {
@@ -90,34 +89,16 @@ public class Sprite {
 		this.positionX += velocityX * time;
 		this.positionY += velocityY * time;
 		
-		if (this.positionX + this.width >= GameStage.CANVAS_WIDTH - GameStage.VIEWPORT_WIDTH / 2) {
-			this.positionX = GameStage.CANVAS_WIDTH - this.width - GameStage.VIEWPORT_WIDTH / 2;
-		} else if (this.positionX <= GameStage.VIEWPORT_WIDTH / 2) {
-			this.positionX = GameStage.VIEWPORT_WIDTH / 2;
+		if (this.positionX + this.width >= GameTimer.CANVAS_WIDTH - GameTimer.VIEWPORT_WIDTH / 2) {
+			this.positionX = GameTimer.CANVAS_WIDTH - this.width - GameTimer.VIEWPORT_WIDTH / 2;
+		} else if (this.positionX <= GameTimer.VIEWPORT_WIDTH / 2) {
+			this.positionX = GameTimer.VIEWPORT_WIDTH / 2;
 		}
 		
-		if (this.positionY + this.height >= GameStage.CANVAS_HEIGHT - GameStage.VIEWPORT_HEIGHT / 2) {
-			this.positionY = GameStage.CANVAS_HEIGHT - this.height - GameStage.VIEWPORT_HEIGHT / 2;
-		} else if (this.positionY <= GameStage.VIEWPORT_HEIGHT / 2) {
-			this.positionY = GameStage.VIEWPORT_HEIGHT / 2;
-		}
-//		System.out.println(positionX + " " + positionY);
-	}
-	
-	public void update(double time, ArrayList<Sprite> enemies) {
-		this.positionX += velocityX * time;
-		this.positionY += velocityY * time;
-		
-		if (this.positionX + this.width >= GameStage.CANVAS_WIDTH - GameStage.VIEWPORT_WIDTH / 2) {
-			this.positionX = GameStage.CANVAS_WIDTH - this.width - GameStage.VIEWPORT_WIDTH / 2;
-		} else if (this.positionX <= GameStage.VIEWPORT_WIDTH / 2) {
-			this.positionX = GameStage.VIEWPORT_WIDTH / 2;
-		}
-		
-		if (this.positionY + this.height >= GameStage.CANVAS_HEIGHT - GameStage.VIEWPORT_HEIGHT / 2) {
-			this.positionY = GameStage.CANVAS_HEIGHT - this.height - GameStage.VIEWPORT_HEIGHT / 2;
-		} else if (this.positionY <= GameStage.VIEWPORT_HEIGHT / 2) {
-			this.positionY = GameStage.VIEWPORT_HEIGHT / 2;
+		if (this.positionY + this.height >= GameTimer.CANVAS_HEIGHT - GameTimer.VIEWPORT_HEIGHT / 2) {
+			this.positionY = GameTimer.CANVAS_HEIGHT - this.height - GameTimer.VIEWPORT_HEIGHT / 2;
+		} else if (this.positionY <= GameTimer.VIEWPORT_HEIGHT / 2) {
+			this.positionY = GameTimer.VIEWPORT_HEIGHT / 2;
 		}
 	}
 	
@@ -156,8 +137,6 @@ public class Sprite {
         	500
 		);
 	}
-	
-	// Setters and getters
 	
 	public double getPositionX() {
 		return this.positionX;

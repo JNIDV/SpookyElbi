@@ -13,21 +13,13 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-//import javafx.scene.Group;
-//import javafx.scene.Node;
 import javafx.scene.Scene;
-//import javafx.scene.canvas.Canvas;
-//import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
-//import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-//import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-//import javafx.scene.paint.Color;
-//import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import weapons.Paper;
 import weapons.Pen;
@@ -39,17 +31,16 @@ public class SpookyElbi extends Application {
     private Scene settingsScene;
     private Scene aboutGameScene;
     private Scene weaponSelectScene;
-//    private Scene scene4;
 
     @Override
     public void start(Stage primaryStage) {
     	primaryStage.setTitle("Spooki ELBI");
-    	GameStage gameStage = new GameStage(primaryStage);
+    	GameTimer gameTimer = new GameTimer(primaryStage);
+    	gameTimer.setWeapon(new Paper());
     	
         // Main Menu [Title]
         StackPane menuLayout = new StackPane();
 
-//        Canvas canvas = new Canvas(1200, 800);
         Image bg = new Image("scenes\\Menu.png", 1200, 900, true, true);
         ImageView iv1 = new ImageView();
         iv1.setPreserveRatio(true);
@@ -75,22 +66,16 @@ public class SpookyElbi extends Application {
         AnchorPane weaponSelectLayout = new AnchorPane();
         
         Button paperButton = new Button();
-        
-        // image ng button
         Image paperImage = new Image("images\\paper.png", 50, 50, true, true);
         ImageView paperImageView = new ImageView(paperImage);
         paperImageView.setFitWidth(50);
         paperImageView.setFitHeight(50);
         paperButton.setGraphic(paperImageView);
-        
-        // set position
         AnchorPane.setLeftAnchor(paperButton, (double) 50);
         AnchorPane.setTopAnchor(paperButton, (double) 200);
-        
-        // action ng button
         paperButton.setOnAction(
         	e -> {
-        		gameStage.setWeapon(new Paper());
+        		gameTimer.setWeapon(new Paper());
         	}
         );
         
@@ -104,7 +89,7 @@ public class SpookyElbi extends Application {
         AnchorPane.setTopAnchor(penButton, (double) 200);
         penButton.setOnAction(
         	e -> {
-        		gameStage.setWeapon(new Pen());
+        		gameTimer.setWeapon(new Pen());
         	}
         );
         
@@ -118,7 +103,7 @@ public class SpookyElbi extends Application {
         AnchorPane.setTopAnchor(pistolButton, (double) 200);
         pistolButton.setOnAction(
         	e -> {
-        		gameStage.setWeapon(new Pistol());
+        		gameTimer.setWeapon(new Pistol());
         	}
         );
         
@@ -132,7 +117,7 @@ public class SpookyElbi extends Application {
         AnchorPane.setTopAnchor(shotgunButton, (double) 200);
         shotgunButton.setOnAction(
         	e -> {
-        		gameStage.setWeapon(new Shotgun());
+        		gameTimer.setWeapon(new Shotgun());
         	}
         );
         
@@ -141,7 +126,7 @@ public class SpookyElbi extends Application {
         AnchorPane.setBottomAnchor(playButton, (double) 50);
         playButton.setOnAction(
     		e -> {
-    			gameStage.runSpookyElbi();
+    			gameTimer.runSpookyElbi();
     		}
 		);
         
@@ -184,21 +169,6 @@ public class SpookyElbi extends Application {
         );
 
         aboutGameScene = new Scene(aboutGameLayout, 1200, 680);
-
-        // Exit
-//        StackPane layout4 = new StackPane();
-//
-//        VBox returnScreen4 = returnScreen(e -> primaryStage.setScene(menuScene));
-//        Image bg4 = createimg("scenes\\settings.png");
-//        ImageView iv4 = new ImageView();
-//        iv4.setPreserveRatio(true);
-//        iv4.setImage(bg4);
-//
-//        layout4.getChildren().addAll(
-//        	iv4, returnScreen4
-//        );
-//
-//        scene4 = new Scene(layout4, 1200, 680);
 
         primaryStage.setScene(menuScene);
         primaryStage.setTitle("Spooky Elbi");

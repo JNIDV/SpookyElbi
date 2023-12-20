@@ -7,6 +7,8 @@ public class Shotgun extends Weapon {
 	public static final long SHOTGUN_DELAY = 700;
 	public static final long SHOTGUN_RELOAD_DELAY = 4000;
 	public static final long SHOTGUN_DAMAGE = 100;
+	public static final double SHOTGUN_BULLET_SPEED = 500;
+	public static final double SHOTGUN_MAX_DISTANCE = 400;
 	public static final Image SHOTGUN_IMAGE = new Image("images\\shotgun.png", 30, 30, true, true);
 	public static final String SHOTGUN_BULLET_IMAGE = "images\\shotgunShell.png";
 	
@@ -15,15 +17,14 @@ public class Shotgun extends Weapon {
 		((Sprite) this).setImage(SHOTGUN_IMAGE);
 		((Weapon) this).setAmmoCount(9);
 		((Weapon) this).setBulletImage(SHOTGUN_BULLET_IMAGE);
+		this.bulletSpeed = SHOTGUN_BULLET_SPEED;
+		this.maxDistance = SHOTGUN_MAX_DISTANCE;
 	}
 	
-	@Override
 	public void shoot(double x, double y) {
-		if (this.bullets.isEmpty()) {
-			return;
-		}
+		super.shoot(x, y);
 		
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i <= 2; i += 2) {
 			Sprite removedBullet = this.bullets.remove(this.bullets.size() - 1);
 			Sprite selfReference = this;
 			((Bullet) removedBullet).setStarting(selfReference.getPositionX(), selfReference.getPositionY());
@@ -37,8 +38,5 @@ public class Shotgun extends Weapon {
 			this.shotBullets.add(removedBullet);
 			removedBullet.setPosition(this.positionX, this.positionY);
 		}
-		
-		
-//		System.out.println("Current ammo: " + this.bullets.size());
 	}
 }

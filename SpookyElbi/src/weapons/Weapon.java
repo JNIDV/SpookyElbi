@@ -11,6 +11,7 @@ package weapons;
 
 import java.util.ArrayList;
 import sprite.Sprite;
+import javafx.scene.media.AudioClip;
 
 public class Weapon extends Sprite {
 	private String bulletImage;
@@ -18,6 +19,9 @@ public class Weapon extends Sprite {
 	private long weaponDelay;
 	private long reloadDelay;
 	private double damage;
+	protected double bulletSpeed;
+	protected double maxDistance;
+	protected String soundFile;
 	protected ArrayList<Sprite> bullets;
 	public ArrayList<Sprite> shotBullets;
 	
@@ -43,25 +47,34 @@ public class Weapon extends Sprite {
 			return;
 		}
 		
+		this.playShotSound();
 		Sprite removedBullet = this.bullets.remove(this.bullets.size() - 1);
 		Sprite selfReference = this;
 		((Bullet) removedBullet).setStarting(selfReference.getPositionX(), selfReference.getPositionY());
 		((Bullet) removedBullet).setDirection(x, y, this);
 		this.shotBullets.add(removedBullet);
 		removedBullet.setPosition(this.positionX, this.positionY);
-		
-//		System.out.println("Current ammo: " + this.bullets.size());
+	}
+	
+	public void playShotSound() {
+		try {
+            AudioClip shotSound = new AudioClip(getClass().getResource("/audio/" + this.soundFile).toString());
+            
+            // Play the sound
+            shotSound.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 	
 	public void reload() {
 		while (this.bullets.size() < this.ammoCount) {
 			Sprite bullet = new Bullet();
+			((Bullet) bullet).setMaxDistance(this.maxDistance);
 			this.bullets.add(bullet);
 			bullet.setImage(this.bulletImage, 10, 10);
 			((Bullet) bullet).setDamage(this.damage);
 		}
-		
-//		System.out.println("Current ammo: " + this.bullets.size());
 	}
 	
 	public long getWeaponDelay() {
@@ -74,5 +87,9 @@ public class Weapon extends Sprite {
 	
 	public long getAmmoCount() {
 		return this.bullets.size();
+	}
+	
+	public double getBulletSpeed() {
+		return this.bulletSpeed;
 	}
 }

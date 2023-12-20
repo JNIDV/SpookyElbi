@@ -17,10 +17,10 @@ public class Enemy extends Sprite {
 	public final static double SPEED_INCREASE = 0.1;
 	
 	private double health;
-	private double directionX;
-	private double directionY;
 	private double speedX;
 	private double speedY;
+	private double directionX;
+	private double directionY;
 	
 	public Enemy(double health, double speedX, double speedY) {
 		this.health = health;
@@ -45,8 +45,6 @@ public class Enemy extends Sprite {
 			return;
 		}
 		
-		// directionX = dx / norm
-		// directionY = dy / norm
 		this.directionX = dx / norm;
 		this.directionY = dy / norm;
 		
@@ -78,8 +76,8 @@ public class Enemy extends Sprite {
 	}
 	
 	public void speedUp(double time) {
-		this.speedX += SPEED_INCREASE * time;
-		this.speedY += SPEED_INCREASE * time;
+		this.speedX += SPEED_INCREASE * time * 0;
+		this.speedY += SPEED_INCREASE * time * 0;
 	}
 	
 	public double getDirectionX() {

@@ -15,7 +15,6 @@ import sprite.Sprite;
 import entities.Enemy;
 
 public class Bullet extends Sprite {
-	public final static double BULLET_SPEED = 300;
 	public final static double MAX_DISTANCE = 500;
 	
 	private double damage;
@@ -23,6 +22,7 @@ public class Bullet extends Sprite {
 	private double startingY;
 	private double directionX;
 	private double directionY;
+	private double maxDistance;
 	private int hitCount = 0;
 	
 	public void setStarting(double x, double y) {
@@ -93,11 +93,15 @@ public class Bullet extends Sprite {
 		this.damage = damage;
 	}
 	
+	public void setMaxDistance(double maxDistance) {
+		this.maxDistance = maxDistance;
+	}
+	
 	public boolean reachedMaxRange() {
 		Sprite selfReference = this;
 		double dx = selfReference.getPositionX() - this.startingX;
 		double dy = selfReference.getPositionY() - this.startingY;
 		double distance = Math.sqrt(dx * dx + dy * dy);
-		return distance >= Bullet.MAX_DISTANCE;
+		return distance >= this.maxDistance;
 	}
 }
