@@ -1,3 +1,13 @@
+/********************************************************
+ * 
+ * The Coffee class. The difference is that applyBoost
+ * gives the mainCharacter speed boost.
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 17:48 2023-12-20
+ * 
+ ********************************************************/
+
 package powerups;
 
 import java.util.Timer;

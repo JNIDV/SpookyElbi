@@ -1,3 +1,10 @@
+/********************************************************
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 17:49 2023-12-20
+ * 
+ ********************************************************/
+
 package powerups;
 
 import sprite.Sprite;

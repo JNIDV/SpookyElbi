@@ -1,4 +1,17 @@
-
+/********************************************************
+ * 
+ * This is the main application of the Spooky Elbi game.
+ * It contains UI elements attributes it extends the 
+ * Application class.
+ * 
+ * It has two additional methods:
+ * 1. startGame() - used to call in the LoadingImageTransition
+ * 2. start()     - used for the running logic
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 10:44 2023-12-04
+ * 
+ ********************************************************/
 
 package application;
 

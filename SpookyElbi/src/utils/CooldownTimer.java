@@ -1,9 +1,14 @@
 /********************************************************
  * 
+ * A class that uses Timer from java.util to perform
+ * cooldowns. It uses the schedule method of the Timer class
+ * and the Timertask to perform an action in the schedule.
  * 
+ * It maintains isActiveCooldown to determine whether
+ * it can be used or not.
  * 
  * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
- * @date_created 10:44 2023-12-04
+ * @date_created 16:43 2023-12-16
  * 
  ********************************************************/
 

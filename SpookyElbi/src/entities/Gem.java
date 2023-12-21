@@ -1,3 +1,12 @@
+/********************************************************
+ * 
+ * The Gem class that extends the Sprite class.
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 10:44 2023-12-04
+ * 
+ ********************************************************/
+
 package entities;
 
 import javafx.scene.media.AudioClip;

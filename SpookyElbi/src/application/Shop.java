@@ -1,3 +1,13 @@
+/********************************************************
+ * 
+ * The Shop class is used to keep track of the weapons,
+ * pets, and boosts that is already bought by the player.
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 10:44 2023-12-04
+ * 
+ ********************************************************/
+
 package application;
 
 import java.util.ArrayList;

@@ -1,3 +1,13 @@
+/********************************************************
+ * 
+ * This class constains the logic of the intro scene using
+ * FadeTransition.
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 14:29 2023-12-21
+ * 
+ ********************************************************/
+
 package application;
 
 import javafx.animation.FadeTransition;

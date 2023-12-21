@@ -1,3 +1,10 @@
+/********************************************************
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 17:48 2023-12-20
+ * 
+ ********************************************************/
+
 package powerups;
 
 import javafx.scene.image.Image;

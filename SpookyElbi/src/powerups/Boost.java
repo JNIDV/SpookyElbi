@@ -1,3 +1,19 @@
+/********************************************************
+ * 
+ * The boosts class is an abstract class meant to be 
+ * inherited by the distinct boosts.
+ * 
+ * It has a playBoost() method to play the sound
+ * of all boosts.
+ * 
+ * There's also an abstract class applyBoost for all 
+ * subclasses.
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 10:44 2023-12-04
+ * 
+ ********************************************************/
+
 package powerups;
 
 import entities.MainCharacter;

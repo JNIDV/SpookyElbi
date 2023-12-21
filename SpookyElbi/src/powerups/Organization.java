@@ -1,3 +1,13 @@
+/********************************************************
+ * 
+ * The Organization class. The differene is that applyBoost
+ * makes the weapon shoot multiple bullets in 4 directions.
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 17:49 2023-12-04
+ * 
+ ********************************************************/
+
 package powerups;
 
 import java.util.Timer;

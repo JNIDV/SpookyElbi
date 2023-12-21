@@ -1,3 +1,10 @@
+/********************************************************
+ * 
+ * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
+ * @date_created 14:51 2023-12-20
+ * 
+ ********************************************************/
+
 package entities;
 
 import javafx.scene.image.Image;

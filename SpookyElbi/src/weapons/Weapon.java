@@ -1,6 +1,6 @@
 /********************************************************
  * 
- * 
+ * The Weapon class. 
  * 
  * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
  * @date_created 10:44 2023-12-04
@@ -38,7 +38,6 @@ public class Weapon extends Sprite {
 			"Penetration: 2\n" +
 			"Speed: 2\n" +
 			"Range: 7";
-	
 	
 	private String bulletImage;
 	private int ammoCount;

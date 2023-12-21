@@ -1,6 +1,9 @@
 /********************************************************
  * 
+ * This class contains the main logic of the the game.
  * 
+ * It extends the AnimationTimer class to implement that
+ * handle method for the Game loop.
  * 
  * @author       Cabral, Alexa Gwen; Villamin, Jan Neal Isaac
  * @date_created 10:44 2023-12-04
@@ -605,9 +608,9 @@ public class GameTimer extends AnimationTimer {
 		this.frogCount = new LongValue(5);
 		this.clockCount = new LongValue(0);
 		this.examCount = new LongValue(0);
-		this.clockSpawnTimer.activateCooldown(60000);
-		this.examSpawnTimer.activateCooldown(90000);
-		this.boostSpawnTimer.activateCooldown(500);
+		this.clockSpawnTimer.activateCooldown(30000);
+		this.examSpawnTimer.activateCooldown(45000);
+		this.boostSpawnTimer.activateCooldown(15000);
 		this.harderTimer.activateCooldown(60000);
 		this.start();
 	}
@@ -619,22 +622,22 @@ public class GameTimer extends AnimationTimer {
 		
 		if (!this.frogSpawnTimer.isActiveCooldown()) {
 			this.spawnFrogs((int) ++this.frogCount.value);
-			this.frogSpawnTimer.activateCooldown(30000);
+			this.frogSpawnTimer.activateCooldown(15000);
 		}
 		
 		if (!this.clockSpawnTimer.isActiveCooldown()) {
 			this.spawnClocks((int) ++this.clockCount.value);
-			this.clockSpawnTimer.activateCooldown(60000);
+			this.clockSpawnTimer.activateCooldown(30000);
 		}
 		
 		if (!this.examSpawnTimer.isActiveCooldown()) {
 			this.spawnExams((int) ++this.examCount.value);
-			this.examSpawnTimer.activateCooldown(90000);
+			this.examSpawnTimer.activateCooldown(45000);
 		}
 		
 		if (!this.boostSpawnTimer.isActiveCooldown()) {
 			this.spawnBoost();
-			this.boostSpawnTimer.activateCooldown(500);
+			this.boostSpawnTimer.activateCooldown(15000);
 		}
 		
 		if (!this.harderTimer.isActiveCooldown()) {
