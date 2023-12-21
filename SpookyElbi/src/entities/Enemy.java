@@ -100,6 +100,7 @@ public class Enemy extends Sprite {
 	}
 	
 	public void decreaseHealth(double dHealth) {
+		System.out.println("Decreased: " + dHealth);
 		this.health -= dHealth;
 	}
 	

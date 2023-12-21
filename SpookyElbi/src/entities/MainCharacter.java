@@ -24,6 +24,10 @@ public class MainCharacter extends Sprite {
 		this.isHit = false;
 	}
 	
+	public void increaseHearts(int dHeart) {
+		this.hearts += dHeart;
+	}
+	
 	public void getHit() {
 		this.isHit = true;
 		super.getHit();

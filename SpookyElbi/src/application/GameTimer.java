@@ -15,6 +15,7 @@ import java.util.Iterator;
 
 import javafx.animation.AnimationTimer;
 import javafx.stage.Stage;
+import powerups.Pet;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -39,7 +40,7 @@ import entities.Frog;
 import entities.Gem;
 import entities.MainCharacter;
 import weapons.Bullet;
-import weapons.Pen;
+import weapons.Paper;
 import weapons.Shotgun;
 import weapons.Weapon;
 
@@ -53,8 +54,8 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
 public class GameTimer extends AnimationTimer {
-	public static final long GAME_DURATION_MINUTES = 1;
-	public static final long GAME_DURATION_SECONDS = 5;
+	public static final long GAME_DURATION_MINUTES = 10;
+	public static final long GAME_DURATION_SECONDS = 60;
 	public static final long GAME_DURATION_NANO = GAME_DURATION_MINUTES * GAME_DURATION_SECONDS * 1_000_000_000L;
 	public static final int CANVAS_WIDTH = 3900;
 	public static final int CANVAS_HEIGHT = 3600;
@@ -62,6 +63,8 @@ public class GameTimer extends AnimationTimer {
 	public static final int VIEWPORT_HEIGHT = 720;
 	public static final double WEAPON_OFFSET_X = 40;
 	public static final double WEAPON_OFFSET_Y = 30;
+	public static final double PET_OFFSET_X = 15;
+	public static final double PET_OFFSET_Y = 20;
 	public static final double CHARACTER_VELOCITY = 100;
 	public static final double CHARACTER_SIDE = 50;
 	public static final double ENEMY_SIDE = 50;
@@ -83,7 +86,7 @@ public class GameTimer extends AnimationTimer {
 		"underclocked.mp3"
 	));
 	
-	private SpookyElbi spookyElbi;
+	private Main spookyElbi;
 	
 	private Stage stage;
 	private StackPane root;
@@ -95,6 +98,7 @@ public class GameTimer extends AnimationTimer {
 	
 	private Sprite mainCharacter;
 	private Sprite weapon;
+	private Sprite pet = null;
 	
 	private ArrayList<Sprite> enemies;
 	private ArrayList<String> input;
@@ -123,7 +127,7 @@ public class GameTimer extends AnimationTimer {
 	private MediaPlayer musicPlayer;
 	private int currentMusicIndex;
 	
-	public GameTimer(Stage stage, SpookyElbi spookyElbi) {
+	public GameTimer(Stage stage, Main spookyElbi) {
 		super();
 		this.spookyElbi      = spookyElbi;
 		this.stage           = stage;
@@ -135,7 +139,7 @@ public class GameTimer extends AnimationTimer {
 		this.random          = new Random();
 		this.graphicsContext = this.entityCanvas.getGraphicsContext2D();
 		this.mainCharacter   = new MainCharacter();
-		this.weapon          = new Pen();
+		this.weapon          = new Paper();
 		this.enemies         = new ArrayList<Sprite>();
 		this.input           = new ArrayList<String>();
 		this.gems            = new ArrayList<Sprite>();
@@ -163,6 +167,12 @@ public class GameTimer extends AnimationTimer {
 		this.scrollPane.setVbarPolicy(ScrollBarPolicy.NEVER);
 		
 		this.setMainCharacter("characterimages\\boy.png");
+		
+		if (this.pet != null) {
+			((Weapon) this.weapon).increaseDamage(((Pet) this.pet).getAdditionalDamage());
+			((MainCharacter) this.mainCharacter).increaseHearts(((Pet) this.pet).getAdditionalHeart());
+		}
+		
 		this.handleKeyEvents();
 		this.handleMouseEvents();
 		
@@ -206,14 +216,19 @@ public class GameTimer extends AnimationTimer {
 	
 	public void setWeapon(String imageFilename) {
 		this.weapon.setImage(imageFilename, GameTimer.WEAPON_SIDE, GameTimer.WEAPON_SIDE);
-		this.weapon.setPosition(GameTimer.CANVAS_WIDTH / 2 + 10, GameTimer.CANVAS_HEIGHT);
+		this.weapon.setPosition(GameTimer.CANVAS_WIDTH / 2 + 10, GameTimer.CANVAS_HEIGHT / 2);
 		((Weapon) this.weapon).reload();
 	}
 	
 	public void setWeapon(Weapon weapon) {
 		this.weapon = weapon;
-		this.weapon.setPosition(GameTimer.CANVAS_WIDTH / 2 + 20, GameTimer.CANVAS_HEIGHT);
+		this.weapon.setPosition(GameTimer.CANVAS_WIDTH / 2 + 20, GameTimer.CANVAS_HEIGHT / 2);
 		((Weapon) this.weapon).reload();
+	}
+	
+	public void setPet(Pet pet) {
+		this.pet = pet;
+		this.pet.setPosition(GameTimer.CANVAS_WIDTH / 2 - 10, GameTimer.CANVAS_HEIGHT / 2);
 	}
 	
 	public void spawnFrogs(int frogCount) {
@@ -309,20 +324,22 @@ public class GameTimer extends AnimationTimer {
 			((MainCharacter) this.mainCharacter).setState(0);
 		}
 		
+		double boostedSpeed = GameTimer.CHARACTER_VELOCITY + (this.pet == null ? 0 : ((Pet) this.pet).getAdditionalSpeed());
+		
 		if (this.input.contains("W")) {
-			this.mainCharacter.addVelocity(0, -GameTimer.CHARACTER_VELOCITY);
+			this.mainCharacter.addVelocity(0, -boostedSpeed);
 		}
 		
 		if (this.input.contains("A")) {
-			this.mainCharacter.addVelocity(-GameTimer.CHARACTER_VELOCITY, 0);
+			this.mainCharacter.addVelocity(-boostedSpeed, 0);
 		}
 		
 		if (this.input.contains("S")) {
-			this.mainCharacter.addVelocity(0, GameTimer.CHARACTER_VELOCITY);
+			this.mainCharacter.addVelocity(0, boostedSpeed);
 		}
 		
 		if (this.input.contains("D")) {
-			this.mainCharacter.addVelocity(GameTimer.CHARACTER_VELOCITY, 0);
+			this.mainCharacter.addVelocity(boostedSpeed, 0);
 		}
 		
 		this.mainCharacter.update(elapsedTime);
@@ -421,6 +438,14 @@ public class GameTimer extends AnimationTimer {
 			this.mainCharacter.getPositionX() + GameTimer.WEAPON_OFFSET_X,
 			this.mainCharacter.getPositionY() + GameTimer.WEAPON_OFFSET_Y
 		);
+		
+		if (this.pet != null) {
+			this.pet.setPosition(
+				this.mainCharacter.getPositionX() + GameTimer.PET_OFFSET_X,
+				this.mainCharacter.getPositionY() - GameTimer.PET_OFFSET_Y
+			);
+		}
+		
 		this.updateEnemies(elapsedTime);
 		this.updateBullets(elapsedTime);
 		this.removeGems();
@@ -452,6 +477,10 @@ public class GameTimer extends AnimationTimer {
 		
 		this.mainCharacter.render(graphicsContext);
 		this.weapon.render(graphicsContext);
+		
+		if (this.pet != null) {
+			this.pet.render(graphicsContext);
+		}
 		
 		for (Sprite enemy : this.enemies) {
 			enemy.render(this.graphicsContext);
@@ -551,6 +580,7 @@ public class GameTimer extends AnimationTimer {
 		if (this.gameOver) {
 			this.secondsSurvived = (currentNanoTime - this.startNanoTime.value) / 1_000_000_000L;
 			this.gemCount = this.gemsCollected + this.secondsSurvived;
+			this.spookyElbi.getShop().setGems((int) this.gemCount);
 			System.out.println("Gem count: " + this.gemCount);
 			this.displayGameOver();
 			this.musicPlayer.stop();
@@ -565,10 +595,17 @@ public class GameTimer extends AnimationTimer {
 		ImageView gameOverImageView = new ImageView(gameOverImage);
 		gameOverImageView.setPreserveRatio(true);
 		
-		Button exit = this.spookyElbi.clearButton(e -> this.stage.setScene(this.spookyElbi.getMenuScene()), 105, 60);
+		Button exit = new Button();
+		exit.setOnAction(e -> {
+			this.stage.setScene(this.spookyElbi.getMainMenuScene());
+			this.spookyElbi.getMenuSoundtrackPlayer().play();
+		});
+		exit.setStyle("-fx-opacity: 0;");
+		exit.setPrefWidth(105);
+		exit.setPrefHeight(60);
 		
 		Text gemsCollected = new Text("Gems collected: " + this.gemsCollected);
-		Text minutesSurvived = new Text("Minutes survived: " + this.secondsSurvived);
+		Text minutesSurvived = new Text("Seconds survived: " + this.secondsSurvived);
 		Text totalGemsEarned = new Text("Total gems earned: " + this.gemCount);
         gemsCollected.setFont(Font.font("Arial", 40));
         minutesSurvived.setFont(Font.font("Arial", 40));

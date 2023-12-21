@@ -34,6 +34,14 @@ public class Weapon extends Sprite {
 		this.shotBullets = new ArrayList<Sprite>();
 	}
 	
+	public void increaseDamage(double dDamage) {
+		this.damage += dDamage;
+		
+		for (Sprite bullet : this.bullets) {
+			((Bullet) bullet).setDamage(this.damage);
+		}
+	}
+	
 	public void setBulletImage(String bulletImage) {
 		this.bulletImage = bulletImage;
 	}
