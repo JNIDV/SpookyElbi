@@ -3,6 +3,16 @@ package powerups;
 import sprite.Sprite;
 
 public class Pet extends Sprite {
+	public static final String CAT_DESCRIPTION = "Cat of UPLB\n" +
+			"++Health Boost\n" +
+			"++Speed Boost\n" +
+			"+Damage Boost\n" 
+;
+	public static final String DOG_DESCRIPTION = "Dog of UPLB\n" +
+			"+Health Boost\n" +
+			"++Speed Boost\n" +
+			"++Damage Boost\n";
+	
 	private double additionalDamage;
 	private double additionalSpeed;
 	private int additionalHeart;

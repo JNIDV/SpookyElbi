@@ -15,6 +15,10 @@ import java.util.Iterator;
 
 import javafx.animation.AnimationTimer;
 import javafx.stage.Stage;
+import powerups.Boost;
+import powerups.Coffee;
+import powerups.Crush;
+import powerups.Organization;
 import powerups.Pet;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -103,6 +107,8 @@ public class GameTimer extends AnimationTimer {
 	private ArrayList<Sprite> enemies;
 	private ArrayList<String> input;
 	private ArrayList<Sprite> gems;
+	private ArrayList<Sprite> boosts;
+	private ArrayList<Sprite> livingBoosts;
 	
 	private CooldownTimer collisionTimer;
 	private CooldownTimer reloadTimer;
@@ -110,6 +116,7 @@ public class GameTimer extends AnimationTimer {
 	private CooldownTimer frogSpawnTimer;
 	private CooldownTimer clockSpawnTimer;
 	private CooldownTimer examSpawnTimer;
+	private CooldownTimer boostSpawnTimer;
 	private CooldownTimer harderTimer;
 	
 	private LongValue startNanoTime;
@@ -143,6 +150,8 @@ public class GameTimer extends AnimationTimer {
 		this.enemies         = new ArrayList<Sprite>();
 		this.input           = new ArrayList<String>();
 		this.gems            = new ArrayList<Sprite>();
+		this.boosts          = new ArrayList<Sprite>();
+		this.livingBoosts    = new ArrayList<Sprite>();
 		this.gameOver        = false;
 		this.collisionTimer  = new CooldownTimer();
 		this.reloadTimer     = new CooldownTimer();
@@ -150,6 +159,7 @@ public class GameTimer extends AnimationTimer {
 		this.frogSpawnTimer  = new CooldownTimer();
 		this.clockSpawnTimer = new CooldownTimer();
 		this.examSpawnTimer  = new CooldownTimer();
+		this.boostSpawnTimer = new CooldownTimer();
 		this.harderTimer     = new CooldownTimer();
 		this.gemCount        = 0;
 		this.gemsCollected   = 0;
@@ -231,6 +241,12 @@ public class GameTimer extends AnimationTimer {
 		this.pet.setPosition(GameTimer.CANVAS_WIDTH / 2 - 10, GameTimer.CANVAS_HEIGHT / 2);
 	}
 	
+	public void addBoost(Boost boost) {
+		if (!this.boosts.contains(boost)) {
+			this.boosts.add(boost);
+		}
+	}
+	
 	public void spawnFrogs(int frogCount) {
 		for (int i = 0; i < frogCount; i++) {
 			Sprite newFrog = new Frog();
@@ -258,6 +274,41 @@ public class GameTimer extends AnimationTimer {
 			double startingY = this.random.nextDouble() * GameTimer.CANVAS_HEIGHT;
 			newExam.setPosition(startingX, startingY);
 			this.enemies.add(newExam);
+		}
+	}
+	
+	public void spawnBoost() {
+		if (this.boosts.isEmpty()) {
+			return;
+		}
+		
+		double startingX = Math.min(
+			GameTimer.CANVAS_WIDTH - GameTimer.VIEWPORT_WIDTH / 2 - GameTimer.CHARACTER_SIDE, 
+			Math.max(
+				GameTimer.VIEWPORT_WIDTH / 2, 
+				this.random.nextDouble() * GameTimer.CANVAS_WIDTH
+			)
+		);
+		double startingY = Math.min(
+			GameTimer.CANVAS_HEIGHT - GameTimer.VIEWPORT_HEIGHT / 2 - GameTimer.CHARACTER_SIDE, 
+			Math.max(
+				GameTimer.VIEWPORT_HEIGHT / 2, 
+				this.random.nextDouble() * GameTimer.CANVAS_HEIGHT
+			)
+		);
+		
+		int randomBoost = this.random.nextInt(this.boosts.size());
+		Sprite newBoostBasis = this.boosts.get(randomBoost);
+		
+		if (newBoostBasis instanceof Coffee) {
+			Sprite newCoffee = new Coffee(startingX, startingY);
+			this.livingBoosts.add(newCoffee);
+		} else if (newBoostBasis instanceof Crush) {
+			Sprite newCrush = new Crush(startingX, startingY);
+			this.livingBoosts.add(newCrush);
+		} else {
+			Sprite newOrganization = new Organization(startingX, startingY);
+			this.livingBoosts.add(newOrganization);
 		}
 	}
 	
@@ -324,7 +375,9 @@ public class GameTimer extends AnimationTimer {
 			((MainCharacter) this.mainCharacter).setState(0);
 		}
 		
-		double boostedSpeed = GameTimer.CHARACTER_VELOCITY + (this.pet == null ? 0 : ((Pet) this.pet).getAdditionalSpeed());
+		double boostedSpeed = GameTimer.CHARACTER_VELOCITY 
+			+ (this.pet == null ? 0 : ((Pet) this.pet).getAdditionalSpeed()) 
+			+ ((MainCharacter) this.mainCharacter).getBoostSpeed();
 		
 		if (this.input.contains("W")) {
 			this.mainCharacter.addVelocity(0, -boostedSpeed);
@@ -374,6 +427,20 @@ public class GameTimer extends AnimationTimer {
 				this.gemsCollected++;
 				((Gem) gem).playSound();
 				gemIterator.remove();
+			}
+		}
+	}
+	
+	public void removeBoosts() {
+		Iterator<Sprite> boostIterator = this.livingBoosts.iterator();
+		
+		while (boostIterator.hasNext()) {
+			Sprite boost = boostIterator.next();
+			
+			if (this.mainCharacter.intersects(boost)) {
+				((Boost) boost).applyBoost((MainCharacter) this.mainCharacter, ((Weapon) this.weapon));
+				((Boost) boost).playBoostSound();
+				boostIterator.remove();
 			}
 		}
 	}
@@ -449,6 +516,7 @@ public class GameTimer extends AnimationTimer {
 		this.updateEnemies(elapsedTime);
 		this.updateBullets(elapsedTime);
 		this.removeGems();
+		this.removeBoosts();
 		
 		lastNanoTime.value = currentNanoTime;
 	}
@@ -473,6 +541,10 @@ public class GameTimer extends AnimationTimer {
 		
 		for (Sprite gem : this.gems) {
 			gem.render(this.graphicsContext);
+		}
+		
+		for (Sprite boost : this.livingBoosts) {
+			boost.render(graphicsContext);
 		}
 		
 		this.mainCharacter.render(graphicsContext);
@@ -531,10 +603,11 @@ public class GameTimer extends AnimationTimer {
 		this.startNanoTime = new LongValue(System.nanoTime());
 		this.lastNanoTime = new LongValue(startNanoTime.value);
 		this.frogCount = new LongValue(5);
-		this.clockCount = new LongValue(1);
+		this.clockCount = new LongValue(0);
 		this.examCount = new LongValue(0);
 		this.clockSpawnTimer.activateCooldown(60000);
 		this.examSpawnTimer.activateCooldown(90000);
+		this.boostSpawnTimer.activateCooldown(500);
 		this.harderTimer.activateCooldown(60000);
 		this.start();
 	}
@@ -557,6 +630,11 @@ public class GameTimer extends AnimationTimer {
 		if (!this.examSpawnTimer.isActiveCooldown()) {
 			this.spawnExams((int) ++this.examCount.value);
 			this.examSpawnTimer.activateCooldown(90000);
+		}
+		
+		if (!this.boostSpawnTimer.isActiveCooldown()) {
+			this.spawnBoost();
+			this.boostSpawnTimer.activateCooldown(500);
 		}
 		
 		if (!this.harderTimer.isActiveCooldown()) {

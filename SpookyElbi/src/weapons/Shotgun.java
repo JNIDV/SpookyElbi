@@ -37,6 +37,10 @@ public class Shotgun extends Weapon {
 			if (!super.shootNoSound(x1, y1)) {
 				return false;
 			}
+			
+			if (this.multipleBullets) {
+				super.shootMultiple(x1, y1);
+			}
 		}
 		
 		this.playShotSound();

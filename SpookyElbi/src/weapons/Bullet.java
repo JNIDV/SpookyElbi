@@ -55,6 +55,32 @@ public class Bullet extends Sprite {
 		weapon.rotateImage(angle);
 	}
 	
+	public void setDirection(double x, double y, Weapon weapon, boolean turn) {
+		double dx = x - weapon.getPositionX();
+		double dy = y - weapon.getPositionY();
+		double norm = Math.sqrt(dx * dx + dy * dy);
+		
+		if (norm == 0) {
+			this.directionX = 0;
+			this.directionY = 0;
+			return;
+		}
+		
+		this.directionX = dx / norm;
+		this.directionY = dy / norm;
+		double angle = Math.toDegrees(Math.atan2(this.directionY, this.directionX));
+		
+		if (angle < 0) {
+			angle += 360;
+		}
+		
+		this.rotateImage(angle);
+		
+		if (turn) {
+			weapon.rotateImage(angle);
+		}
+	}
+	
 	public boolean checkEnemiesCollision(ArrayList<Sprite> enemies) {
 		boolean collided = false;
 		

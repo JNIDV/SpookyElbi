@@ -24,7 +24,7 @@ public class Shop {
 	public static final int ORGANIZATION = 8;
 	
 	private int gems;
-	private ArrayList<Integer> boosts = new ArrayList<Integer>();
+	private ArrayList<Integer> boostsUnlocked = new ArrayList<Integer>();
 	private ArrayList<Integer> weaponsUnlocked = new ArrayList<Integer>();
 	private ArrayList<Integer> petsUnlocked = new ArrayList<Integer>();
 	
@@ -41,8 +41,8 @@ public class Shop {
 		return this.gems;
 	}
 	
-	public ArrayList<Integer> getBoosts() {
-		return this.boosts;
+	public ArrayList<Integer> getBoostsUnlocked() {
+		return this.boostsUnlocked;
 	}
 	
 	public ArrayList<Integer> getWeaponsUnlocked() {
@@ -61,6 +61,10 @@ public class Shop {
 		return this.petsUnlocked.contains(petIndex);
 	}
 	
+	private boolean boostIsBought(int boostIndex) {
+		return this.boostsUnlocked.contains(boostIndex);
+	}
+	
 	public void buyWeapon(int weaponIndex) {
 		if (this.isBought(weaponIndex)) {
 			return;
@@ -69,32 +73,24 @@ public class Shop {
 		switch (weaponIndex) {
 		case PEN:
 			if (this.gems >= PEN_COST) {
-				if (!this.weaponsUnlocked.contains(PEN)) {
-					this.weaponsUnlocked.add(PEN);
-				}
-				
 				this.gems -= PEN_COST;
 			}
+			
+			this.weaponsUnlocked.add(weaponIndex);
 			break;
 		case PISTOL:
 			if (this.gems >= PISTOL_COST) {
-				if (!this.weaponsUnlocked.contains(PISTOL)) {
-					this.weaponsUnlocked.add(PISTOL);
-				}
-				
 				this.gems -= PISTOL_COST;
 			}
 			
+			this.weaponsUnlocked.add(weaponIndex);
 			break;
 		case SHOTGUN:
 			if (this.gems >= SHOTGUN_COST) {
-				if (!this.weaponsUnlocked.contains(SHOTGUN)) {
-					this.weaponsUnlocked.add(SHOTGUN);
-				}
-				
 				this.gems -= SHOTGUN_COST;
 			}
 			
+			this.weaponsUnlocked.add(weaponIndex);
 			break;
 		}
 	}
@@ -107,45 +103,47 @@ public class Shop {
 		switch (petIndex) {
 		case CAT:
 			if (this.gems >= CAT_COST) {
-				if (!this.petsUnlocked.contains(CAT)) {
-					this.petsUnlocked.add(CAT);
-				}
-				
 				this.gems -= CAT_COST;
 			}
+			
+			this.petsUnlocked.add(petIndex);
 			break;
 		case DOG:
 			if (this.gems >= DOG_COST) {
-				if (!this.petsUnlocked.contains(DOG)) {
-					this.petsUnlocked.add(DOG);
-				}
-				
 				this.gems -= DOG_COST;
 			}
 			
+			this.petsUnlocked.add(petIndex);
 			break;
 		}
 	}
 	
 	public void buyBoost(int boostIndex) {
+		if (this.boostIsBought(boostIndex)) {
+			return;
+		}
+		
 		switch (boostIndex) {
 		case COFFEE:
 			if (this.gems >= COFFEE_COST) {
-				boosts.add(COFFEE);
+				this.gems -= COFFEE_COST;
 			}
 			
+			this.boostsUnlocked.add(boostIndex);
 			break;
 		case CRUSH:
 			if (this.gems >= CRUSH_COST) {
-				boosts.add(CRUSH);
+				this.gems -= CRUSH_COST;
 			}
 			
+			this.boostsUnlocked.add(boostIndex);
 			break;
 		case ORGANIZATION:
 			if (this.gems >= ORGANIZATION_COST) {
-				boosts.add(ORGANIZATION);
+				this.gems -= ORGANIZATION_COST;
 			}
 			
+			this.boostsUnlocked.add(boostIndex);
 			break;
 		}
 	}

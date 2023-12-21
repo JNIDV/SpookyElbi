@@ -18,14 +18,24 @@ public class MainCharacter extends Sprite {
 	private boolean isMoving;
 	private int state;
 	public boolean isHit;
+	private double boostSpeed;
 	
 	public MainCharacter() {
 		((Sprite) this).setRedImage(new Image("characterimages\\yellowboy.png", GameTimer.CHARACTER_SIDE, GameTimer.CHARACTER_SIDE, true, true));
 		this.isHit = false;
+		this.boostSpeed = 0;
 	}
 	
 	public void increaseHearts(int dHeart) {
 		this.hearts += dHeart;
+	}
+	
+	public void setBoostSpeed(double boostSpeed) { 
+		this.boostSpeed += boostSpeed;
+	}
+	
+	public double getBoostSpeed() {
+		return this.boostSpeed;
 	}
 	
 	public void getHit() {

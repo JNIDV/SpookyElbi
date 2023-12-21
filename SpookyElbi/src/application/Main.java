@@ -1,3 +1,5 @@
+
+
 package application;
 
 import java.util.Timer;
@@ -23,8 +25,12 @@ import weapons.Pistol;
 import weapons.Shotgun;
 import weapons.Weapon;
 import powerups.Pet;
+import powerups.Boost;
 import powerups.Cat;
+import powerups.Coffee;
+import powerups.Crush;
 import powerups.Dog;
+import powerups.Organization;
 
 public class Main extends Application {
 	private Scene mainMenuScene;
@@ -41,17 +47,16 @@ public class Main extends Application {
 	private int selectedWeaponInt = Shop.PAPER;
 	private Pet selectedPet = new Cat();
 	private int selectedPetInt = Shop.CAT;
+	private Boost selectedBoost = null;
+	private int selectedBoostInt = -1;
 	
 	private Text gems = new Text();
+	private Text description = new Text();
 	private AnchorPane weaponShopButtons = new AnchorPane();
 	private AnchorPane petShopButtons = new AnchorPane();
 	private AnchorPane boostShopButtons = new AnchorPane();
 	
-
-	@Override
-	public void start(Stage primaryStage){
-		primaryStage.setTitle("Spooky ELBI");
-
+	public void startGame(Stage primaryStage) {
 		// Main Menu, first scene to show
         StackPane menuLayout = new StackPane();
 
@@ -65,7 +70,7 @@ public class Main extends Application {
         String menuSoundFile = "menu.mp3";
         Media menuSoundtrack = new Media(getClass().getResource(menuSoundFile).toString());
         menuSoundtrackPlayer = new MediaPlayer(menuSoundtrack);
-        primaryStage.setOnShown(e -> menuSoundtrackPlayer.play());
+        menuSoundtrackPlayer.play();
 
         // AnchorPane for easier positioning of the buttons
         AnchorPane mainmenuButtons = new AnchorPane();
@@ -273,8 +278,21 @@ public class Main extends Application {
         ImageView imageViewofAboutGameBackground = new ImageView();
         imageViewofAboutGameBackground.setPreserveRatio(true);
         imageViewofAboutGameBackground.setImage(aboutgameBackground);
-
-
+        
+        Text aboutGame = new Text(
+    		"Spooky Elbi\n\n" +
+    		"Survive for 10 mins to survive the horror of Spooky Elbi.\n" +
+    		"Unlock all weapons and pets to have a higher survival chance!\n\n" +
+    		"Spooky Elbi copr. 2023, 2023 Ghost. Ghost and its logo are trademarks of Ghost Studios Inc.\n\n" +
+    		"How to play:\n" +
+    		"Movement: WASD keys.\n" +
+    		"Shoot: use left click to shoot & use mouse cursor to aim\n\n" +
+    		"Developers:\n" + 
+    		"Villamin, Jan Neal Isaac\n" +
+    		"Cabral, Alexa Gwen M.\n"
+        );
+        
+        aboutGame.setFont(Font.font("Arial", 20));
         AnchorPane aboutgameButtons = new AnchorPane();
 
         // previous button (back to main menu)
@@ -286,8 +304,10 @@ public class Main extends Application {
 
         // previous button set-up
         previousButtonPosition(aboutgamePreviousButton);
+        AnchorPane.setLeftAnchor(aboutGame, 65.0);
+        AnchorPane.setTopAnchor(aboutGame, 200.0);
 
-        aboutgameButtons.getChildren().addAll(aboutgamePreviousButton);
+        aboutgameButtons.getChildren().addAll(aboutgamePreviousButton, aboutGame);
 
         aboutgamePane.getChildren().addAll(
         	imageViewofAboutGameBackground, aboutgameButtons
@@ -346,24 +366,28 @@ public class Main extends Application {
 			e -> {
 				this.selectedWeapon = new Paper();
 				this.selectedWeaponInt = Shop.PAPER;
+				this.addDescription(weaponShopButtons, Weapon.PAPER_DESCRIPTION);
 			}
 		);
 		Button penButton = createButton(
 			e -> {
 				this.selectedWeapon = new Pen();
 				this.selectedWeaponInt = Shop.PEN;
+				this.addDescription(weaponShopButtons, Weapon.PEN_DESCRIPTION);
 			}
 		);
 	    Button pistolButton = createButton(
 			e -> {
 				this.selectedWeapon = new Pistol();
 				this.selectedWeaponInt = Shop.PISTOL;
+				this.addDescription(weaponShopButtons, Weapon.PISTOL_DESCRIPTION);
 			}
 		);
 		Button shotgunButton = createButton(
 			e -> {
 				this.selectedWeapon = new Shotgun();
 				this.selectedWeaponInt = Shop.SHOTGUN;
+				this.addDescription(weaponShopButtons, Weapon.SHOTGUN_DESCRIPTION);
 			}
 		);
 
@@ -464,12 +488,14 @@ public class Main extends Application {
         	e -> {
         		this.selectedPet = new Cat();
         		this.selectedPetInt = Shop.CAT;
+        		this.addDescription(petShopButtons, Pet.CAT_DESCRIPTION);
         	}
     	);
         Button dogButton = createButton(
     		e -> {
     			this.selectedPet = new Dog();
     			this.selectedPetInt = Shop.DOG;
+    			this.addDescription(petShopButtons, Pet.DOG_DESCRIPTION);
     		}
 		);
 
@@ -545,12 +571,15 @@ public class Main extends Application {
          */
         Button boostShopEquipButton = createButton(
         	e -> {
-        		primaryStage.setScene(petShopScene);
+        		if (this.shop.getBoostsUnlocked().contains(this.selectedBoostInt)) {
+    				this.spookyElbi.addBoost(this.selectedBoost);
+    			}
         	}
     	);
         Button boostShopBuyButton = createButton(
         	e -> {
-        		primaryStage.setScene(petShopScene);
+        		this.shop.buyBoost(this.selectedBoostInt);
+        		this.updateGems();
         	}
     	);
 
@@ -562,17 +591,23 @@ public class Main extends Application {
          */
         Button coffeeButton = createButton(
     		e -> {
-    			primaryStage.setScene(petShopScene);
+    			this.selectedBoost = new Coffee(0, 0);
+    			this.selectedBoostInt = Shop.COFFEE;
+    			this.addDescription(boostShopButtons, Boost.COFFEE_DESCRIPTION);
     		}
 		);
         Button crushButton = createButton(
     		e -> {
-    			primaryStage.setScene(petShopScene);
+    			this.selectedBoost = new Crush(0, 0);
+    			this.selectedBoostInt = Shop.CRUSH;
+    			this.addDescription(boostShopButtons, Boost.CRUSH_DESCRIPTION);
     		}
 		);
         Button organizationButton = createButton(
     		e -> {
-    			primaryStage.setScene(petShopScene);
+    			this.selectedBoost = new Organization(0, 0);
+    			this.selectedBoostInt = Shop.ORGANIZATION;
+    			this.addDescription(boostShopButtons, Boost.ORGANIZATION_DESCRIPTION);
     		}
 		);
 
@@ -617,19 +652,19 @@ public class Main extends Application {
         );
 
         boostShopScene = new Scene(boostShopPane, 1200, 670);
-        //=================== End of Boost Screen ===================
-        //=================== Game ===================
-
-
-
-        // //=================== End Game ===================
-
-
-
+        // =================== End of Boost Screen ===================
+        
         // Show program
         primaryStage.setScene(mainMenuScene);
         primaryStage.show();
-
+	}
+	
+	@Override
+	public void start(Stage primaryStage){
+		primaryStage.setTitle("Spooky ELBI");
+		
+		LoadingImageTransition intro = new LoadingImageTransition(this);
+		intro.setStageComponents(primaryStage);
 	}
 
 	// creates image
@@ -730,6 +765,19 @@ public class Main extends Application {
 		anchorPane.getChildren().add(this.gems);
 		AnchorPane.setTopAnchor(this.gems, (double) 20);
         AnchorPane.setRightAnchor(this.gems, (double) 40);
+	}
+	
+	private void addDescription(AnchorPane anchorPane, String string) {
+		this.description.setText(string);
+		this.description.setFont(Font.font("Arial", 15));
+		
+		if (anchorPane.getChildren().contains(this.description)) {
+			return;
+		}
+		
+		anchorPane.getChildren().add(this.description);
+		AnchorPane.setTopAnchor(this.description, (double) 380);
+        AnchorPane.setLeftAnchor(this.description, (double) 100);
 	}
 	
 	public Shop getShop() {
